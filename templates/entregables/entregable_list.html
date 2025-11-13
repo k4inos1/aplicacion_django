@@ -20,9 +20,9 @@
             <div class="col-md-3">
                 <select name="estado" class="form-select">
                     <option value="">Todos los estados</option>
-                    {% for estado in estados %}
-                    <option value="{{ estado.pk }}" {% if estado_filter == estado.pk|stringformat:"s" %}selected{% endif %}>
-                        {{ estado.nombre }}
+                    {% for value, label in estados %}
+                    <option value="{{ value }}" {% if estado_filter == value %}selected{% endif %}>
+                        {{ label }}
                     </option>
                     {% endfor %}
                 </select>
@@ -69,9 +69,7 @@
                 <td>{{ entregable.proyecto.nombre }}</td>
                 <td>{{ entregable.responsable.nombre|default:"Sin asignar" }}</td>
                 <td>
-                    <span class="badge" style="background-color: {{ entregable.estado.color }}">
-                        {{ entregable.estado.nombre }}
-                    </span>
+                    {{ entregable.get_estado_display }}
                 </td>
                 <td>
                     <span class="badge badge-prioridad-{{ entregable.prioridad }}">

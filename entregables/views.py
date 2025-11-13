@@ -1,7 +1,8 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Q
-from .models import Equipo, Miembro, Proyecto, Entregable, EstadoEntregable, Comentario
+from .models import Equipo, Miembro, Proyecto, Entregable, Comentario
 from datetime import date
 
 
@@ -13,7 +14,7 @@ def index(request):
     miembros_count = Miembro.objects.filter(activo=True).count()
     
     # Entregables recientes
-    entregables_recientes = Entregable.objects.select_related('proyecto', 'responsable', 'estado').order_by('-fecha_creacion')[:5]
+    entregables_recientes = Entregable.objects.select_related('proyecto', 'responsable').order_by('-fecha_creacion')[:5]
     
     # Proyectos activos
     proyectos_activos = Proyecto.objects.filter(estado='en_progreso').select_related('equipo')[:5]
@@ -205,13 +206,13 @@ def proyecto_delete(request, pk):
 # ===== CRUD ENTREGABLES =====
 def entregable_list(request):
     """Lista de entregables"""
-    entregables = Entregable.objects.select_related('proyecto', 'responsable', 'estado').order_by('-fecha_creacion')
+    entregables = Entregable.objects.select_related('proyecto', 'responsable').order_by('-fecha_creacion')
     estado_filter = request.GET.get('estado')
     prioridad_filter = request.GET.get('prioridad')
     busqueda = request.GET.get('q')
     
     if estado_filter:
-        entregables = entregables.filter(estado_id=estado_filter)
+        entregables = entregables.filter(estado=estado_filter)
     if prioridad_filter:
         entregables = entregables.filter(prioridad=prioridad_filter)
     if busqueda:
@@ -220,13 +221,12 @@ def entregable_list(request):
             Q(descripcion__icontains=busqueda)
         )
     
-    estados = EstadoEntregable.objects.all()
     context = {
         'entregables': entregables,
         'busqueda': busqueda,
         'estado_filter': estado_filter,
         'prioridad_filter': prioridad_filter,
-        'estados': estados,
+        'estados': Entregable.ESTADOS,
         'prioridades': Entregable.PRIORIDADES
     }
     return render(request, 'entregables/entregable_list.html', context)
@@ -239,18 +239,18 @@ def entregable_create(request):
         descripcion = request.POST.get('descripcion', '')
         proyecto_id = request.POST.get('proyecto')
         responsable_id = request.POST.get('responsable')
-        estado_id = request.POST.get('estado')
+        estado = request.POST.get('estado', 'pendiente')
         prioridad = request.POST.get('prioridad', 'media')
         fecha_vencimiento = request.POST.get('fecha_vencimiento')
         porcentaje_completado = request.POST.get('porcentaje_completado', 0)
         
-        if titulo and proyecto_id and estado_id and fecha_vencimiento:
+        if titulo and proyecto_id and estado and fecha_vencimiento:
             entregable = Entregable.objects.create(
                 titulo=titulo,
                 descripcion=descripcion,
                 proyecto_id=proyecto_id,
                 responsable_id=responsable_id if responsable_id else None,
-                estado_id=estado_id,
+                estado=estado,
                 prioridad=prioridad,
                 fecha_vencimiento=fecha_vencimiento,
                 porcentaje_completado=porcentaje_completado
@@ -268,13 +268,12 @@ def entregable_create(request):
     
     proyectos = Proyecto.objects.all()
     miembros = Miembro.objects.filter(activo=True)
-    estados = EstadoEntregable.objects.all()
     
     context = {
         'action': 'Crear',
         'proyectos': proyectos,
         'miembros': miembros,
-        'estados': estados,
+        'estados': Entregable.ESTADOS,
         'prioridades': Entregable.PRIORIDADES
     }
     return render(request, 'entregables/entregable_form.html', context)
@@ -290,12 +289,12 @@ def entregable_update(request, pk):
         entregable.proyecto_id = request.POST.get('proyecto')
         responsable_id = request.POST.get('responsable')
         entregable.responsable_id = responsable_id if responsable_id else None
-        entregable.estado_id = request.POST.get('estado')
+        entregable.estado = request.POST.get('estado')
         entregable.prioridad = request.POST.get('prioridad')
         entregable.fecha_vencimiento = request.POST.get('fecha_vencimiento')
         entregable.porcentaje_completado = request.POST.get('porcentaje_completado', 0)
         
-        if entregable.titulo and entregable.proyecto_id and entregable.estado_id and entregable.fecha_vencimiento:
+        if entregable.titulo and entregable.proyecto_id and entregable.estado and entregable.fecha_vencimiento:
             # Manejar archivo adjunto
             if 'archivo' in request.FILES:
                 entregable.archivo = request.FILES['archivo']
@@ -308,14 +307,13 @@ def entregable_update(request, pk):
     
     proyectos = Proyecto.objects.all()
     miembros = Miembro.objects.filter(activo=True)
-    estados = EstadoEntregable.objects.all()
     
     context = {
         'entregable': entregable,
         'action': 'Actualizar',
         'proyectos': proyectos,
         'miembros': miembros,
-        'estados': estados,
+        'estados': Entregable.ESTADOS,
         'prioridades': Entregable.PRIORIDADES
     }
     return render(request, 'entregables/entregable_form.html', context)

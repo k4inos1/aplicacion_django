@@ -54,9 +54,9 @@
                         <div class="col-md-4 mb-3">
                             <label for="estado" class="form-label">Estado <span class="text-danger">*</span></label>
                             <select class="form-select" id="estado" name="estado" required>
-                                {% for estado in estados %}
-                                <option value="{{ estado.pk }}" {% if entregable.estado_id == estado.pk %}selected{% endif %}>
-                                    {{ estado.nombre }}
+                                {% for value, label in estados %}
+                                <option value="{{ value }}" {% if entregable.estado == value %}selected{% endif %}>
+                                    {{ label }}
                                 </option>
                                 {% endfor %}
                             </select>

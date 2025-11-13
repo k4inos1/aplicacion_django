@@ -73,25 +73,16 @@ class Proyecto(models.Model):
         return f"{self.nombre} - {self.get_estado_display()}"
 
 
-class EstadoEntregable(models.Model):
-    """Modelo para representar los estados posibles de un entregable"""
-    nombre = models.CharField(max_length=100, unique=True, verbose_name="Nombre del Estado")
-    descripcion = models.TextField(blank=True, verbose_name="Descripción")
-    color = models.CharField(max_length=7, default='#6c757d', verbose_name="Color (hex)", 
-                            help_text="Color en formato hexadecimal (ej: #ff0000)")
-    orden = models.IntegerField(default=0, verbose_name="Orden")
-
-    class Meta:
-        verbose_name = "Estado de Entregable"
-        verbose_name_plural = "Estados de Entregables"
-        ordering = ['orden']
-
-    def __str__(self):
-        return self.nombre
-
 
 class Entregable(models.Model):
     """Modelo para representar un entregable del proyecto"""
+    ESTADOS = [
+        ('pendiente', 'Pendiente'),
+        ('en_progreso', 'En Progreso'),
+        ('en_revision', 'En Revisión'),
+        ('aprobado', 'Aprobado'),
+        ('rechazado', 'Rechazado'),
+    ]
     PRIORIDADES = [
         ('baja', 'Baja'),
         ('media', 'Media'),
@@ -103,7 +94,7 @@ class Entregable(models.Model):
     descripcion = models.TextField(verbose_name="Descripción")
     proyecto = models.ForeignKey(Proyecto, on_delete=models.CASCADE, related_name='entregables', verbose_name="Proyecto")
     responsable = models.ForeignKey(Miembro, on_delete=models.SET_NULL, null=True, related_name='entregables_asignados', verbose_name="Responsable")
-    estado = models.ForeignKey(EstadoEntregable, on_delete=models.PROTECT, verbose_name="Estado")
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='pendiente', verbose_name="Estado")
     prioridad = models.CharField(max_length=10, choices=PRIORIDADES, default='media', verbose_name="Prioridad")
     fecha_creacion = models.DateTimeField(default=timezone.now, verbose_name="Fecha de Creación")
     fecha_vencimiento = models.DateField(verbose_name="Fecha de Vencimiento")

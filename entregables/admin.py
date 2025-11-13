@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Equipo, Miembro, Proyecto, EstadoEntregable, Entregable, Comentario
+from .models import Equipo, Miembro, Proyecto, Entregable, Comentario
 
 
 @admin.register(Equipo)
@@ -26,11 +26,7 @@ class ProyectoAdmin(admin.ModelAdmin):
     date_hierarchy = 'fecha_inicio'
 
 
-@admin.register(EstadoEntregable)
-class EstadoEntregableAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'color', 'orden']
-    list_editable = ['orden']
-    ordering = ['orden']
+
 
 
 @admin.register(Entregable)

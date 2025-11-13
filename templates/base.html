@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Sistema de Gestión de Entregables{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{% url 'index' %}">
-                <i class="bi bi-clipboard-check"></i> Gestión de Entregables
+                Gestión de Entregables
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -23,19 +23,19 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'index' %}"><i class="bi bi-house"></i> Inicio</a>
+                        <a class="nav-link" href="{% url 'index' %}">Inicio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'equipo_list' %}"><i class="bi bi-people"></i> Equipos</a>
+                        <a class="nav-link" href="{% url 'equipo_list' %}">Equipos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'proyecto_list' %}"><i class="bi bi-folder"></i> Proyectos</a>
+                        <a class="nav-link" href="{% url 'proyecto_list' %}">Proyectos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'entregable_list' %}"><i class="bi bi-list-task"></i> Entregables</a>
+                        <a class="nav-link" href="{% url 'entregable_list' %}">Entregables</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin/"><i class="bi bi-gear"></i> Admin</a>
+                        <a class="nav-link" href="/admin/">Admin</a>
                     </li>
                 </ul>
             </div>
@@ -55,16 +55,16 @@
     {% endif %}
 
     <!-- Content -->
-    <main class="content">
+    <main class="content py-4">
         <div class="container">
             {% block content %}{% endblock %}
         </div>
     </main>
 
     <!-- Footer -->
-    <footer class="text-center text-muted">
+    <footer class="text-center">
         <div class="container">
-            <p class="mb-0">&copy; 2025 Sistema de Gestión de Entregables por Equipo</p>
+            <p class="mb-0">&copy; 2025 Gestión de Entregables. Todos los derechos reservados.</p>
         </div>
     </footer>
 
