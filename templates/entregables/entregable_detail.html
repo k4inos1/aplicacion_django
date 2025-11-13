@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ entregable.titulo }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'entregable_list' %}">Entregables</a></li>
+            <li class="breadcrumb-item active">{{ entregable.titulo }}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h3 class="mb-0"><i class="bi bi-file-text"></i> {{ entregable.titulo }}</h3>
+            </div>
+            <div class="card-body">
+                <h5>Descripción</h5>
+                <p>{{ entregable.descripcion }}</p>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Proyecto:</strong> {{ entregable.proyecto.nombre }}</p>
+                        <p><strong>Responsable:</strong> {{ entregable.responsable.nombre|default:"Sin asignar" }}</p>
+                        <p><strong>Estado:</strong> 
+                            <span class="badge" style="background-color: {{ entregable.estado.color }}">
+                                {{ entregable.estado.nombre }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Prioridad:</strong> 
+                            <span class="badge badge-prioridad-{{ entregable.prioridad }}">
+                                {{ entregable.get_prioridad_display }}
+                            </span>
+                        </p>
+                        <p><strong>Fecha de Vencimiento:</strong> {{ entregable.fecha_vencimiento }}
+                            {% if entregable.esta_vencido %}
+                                <i class="bi bi-exclamation-triangle text-danger" title="Vencido"></i>
+                            {% endif %}
+                        </p>
+                        <p><strong>Fecha de Creación:</strong> {{ entregable.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h5>Progreso</h5>
+                <div class="progress" style="height: 30px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ entregable.porcentaje_completado }}%"
+                         aria-valuenow="{{ entregable.porcentaje_completado }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ entregable.porcentaje_completado }}%
+                    </div>
+                </div>
+                
+                {% if entregable.archivo %}
+                <hr>
+                <h5>Archivo Adjunto</h5>
+                <p>
+                    <a href="{{ entregable.archivo.url }}" target="_blank" class="btn btn-outline-primary">
+                        <i class="bi bi-download"></i> Descargar Archivo
+                    </a>
+                </p>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'entregable_update' entregable.pk %}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+                <a href="{% url 'entregable_delete' entregable.pk %}" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Eliminar
+                </a>
+                <a href="{% url 'entregable_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+
+        <!-- Comentarios -->
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Comentarios ({{ comentarios.count }})</h5>
+            </div>
+            <div class="card-body">
+                {% if comentarios %}
+                    {% for comentario in comentarios %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    <i class="bi bi-person-circle"></i> {{ comentario.autor }}
+                                </h6>
+                                <small class="text-muted">{{ comentario.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            <p class="card-text">{{ comentario.contenido }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No hay comentarios aún.</p>
+                {% endif %}
+                
+                <hr>
+                
+                <h6>Agregar Comentario</h6>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="autor" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="autor" name="autor" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contenido" class="form-label">Comentario</label>
+                        <textarea class="form-control" id="contenido" name="contenido" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Enviar Comentario
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0">Información del Proyecto</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Nombre:</strong> {{ entregable.proyecto.nombre }}</p>
+                <p><strong>Equipo:</strong> {{ entregable.proyecto.equipo.nombre }}</p>
+                <p><strong>Estado:</strong> {{ entregable.proyecto.get_estado_display }}</p>
+                <p class="mb-0"><strong>Fecha Inicio:</strong> {{ entregable.proyecto.fecha_inicio }}</p>
+            </div>
+        </div>
+
+        {% if entregable.responsable %}
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0">Responsable</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Nombre:</strong> {{ entregable.responsable.nombre }}</p>
+                <p><strong>Email:</strong> {{ entregable.responsable.email }}</p>
+                <p><strong>Rol:</strong> {{ entregable.responsable.get_rol_display }}</p>
+                <p class="mb-0"><strong>Equipo:</strong> {{ entregable.responsable.equipo.nombre }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

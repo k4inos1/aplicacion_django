@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1 class="display-4"><i class="bi bi-speedometer2"></i> Panel de Control</h1>
+        <p class="lead">Bienvenido al Sistema de Gestión de Entregables por Equipo</p>
+    </div>
+</div>
+
+<!-- Estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card card-stat bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-people fs-1"></i>
+                <h3 class="mt-2">{{ equipos_count }}</h3>
+                <p class="mb-0">Equipos Activos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat bg-success text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-folder fs-1"></i>
+                <h3 class="mt-2">{{ proyectos_count }}</h3>
+                <p class="mb-0">Proyectos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat bg-info text-white">
+            <div class="card-body text-center">
+                <i class="bi bi-list-task fs-1"></i>
+                <h3 class="mt-2">{{ entregables_count }}</h3>
+                <p class="mb-0">Entregables</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat bg-warning text-dark">
+            <div class="card-body text-center">
+                <i class="bi bi-person-badge fs-1"></i>
+                <h3 class="mt-2">{{ miembros_count }}</h3>
+                <p class="mb-0">Miembros</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Proyectos Activos -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-folder-open"></i> Proyectos en Progreso</h5>
+            </div>
+            <div class="card-body">
+                {% if proyectos_activos %}
+                <div class="list-group">
+                    {% for proyecto in proyectos_activos %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ proyecto.nombre }}</h6>
+                            <small class="text-muted">{{ proyecto.equipo.nombre }}</small>
+                        </div>
+                        <small>{{ proyecto.descripcion|truncatewords:15 }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No hay proyectos en progreso.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Entregables Recientes -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Entregables Recientes</h5>
+            </div>
+            <div class="card-body">
+                {% if entregables_recientes %}
+                <div class="list-group">
+                    {% for entregable in entregables_recientes %}
+                    <a href="{% url 'entregable_detail' entregable.pk %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ entregable.titulo }}</h6>
+                            <span class="badge" style="background-color: {{ entregable.estado.color }}">{{ entregable.estado.nombre }}</span>
+                        </div>
+                        <small class="text-muted">{{ entregable.proyecto.nombre }}</small>
+                        <br>
+                        <small class="text-muted">Vencimiento: {{ entregable.fecha_vencimiento }}</small>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No hay entregables recientes.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones Rápidas -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'equipo_create' %}" class="btn btn-primary me-2 mb-2">
+                    <i class="bi bi-plus-circle"></i> Nuevo Equipo
+                </a>
+                <a href="{% url 'proyecto_create' %}" class="btn btn-success me-2 mb-2">
+                    <i class="bi bi-plus-circle"></i> Nuevo Proyecto
+                </a>
+                <a href="{% url 'entregable_create' %}" class="btn btn-info me-2 mb-2">
+                    <i class="bi bi-plus-circle"></i> Nuevo Entregable
+                </a>
+                <a href="/admin/" class="btn btn-secondary me-2 mb-2">
+                    <i class="bi bi-gear"></i> Panel de Administración
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

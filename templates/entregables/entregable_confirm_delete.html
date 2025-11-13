@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Entregable - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirmar Eliminación</h4>
+            </div>
+            <div class="card-body">
+                <p class="lead">¿Estás seguro de que deseas eliminar el entregable?</p>
+                <div class="alert alert-warning">
+                    <strong>Título:</strong> {{ entregable.titulo }}<br>
+                    <strong>Proyecto:</strong> {{ entregable.proyecto.nombre }}<br>
+                    <strong>Estado:</strong> {{ entregable.estado.nombre }}<br>
+                    <strong>Comentarios:</strong> {{ entregable.comentarios.count }}
+                </div>
+                <p class="text-danger">
+                    <i class="bi bi-exclamation-circle"></i> 
+                    Esta acción eliminará también todos los comentarios asociados al entregable.
+                </p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'entregable_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Confirmar Eliminación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

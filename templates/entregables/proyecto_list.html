@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Proyectos - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-folder"></i> Proyectos</h2>
+    <a href="{% url 'proyecto_create' %}" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Nuevo Proyecto
+    </a>
+</div>
+
+<!-- Filtros y Búsqueda -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-5">
+                <input type="text" name="q" class="form-control" placeholder="Buscar proyectos..." value="{{ busqueda }}">
+            </div>
+            <div class="col-md-5">
+                <select name="estado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    {% for value, label in estados %}
+                    <option value="{{ value }}" {% if estado_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Proyectos -->
+{% if proyectos %}
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>Equipo</th>
+                <th>Estado</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin Estimada</th>
+                <th>Entregables</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for proyecto in proyectos %}
+            <tr>
+                <td><strong>{{ proyecto.nombre }}</strong></td>
+                <td>{{ proyecto.equipo.nombre }}</td>
+                <td>
+                    {% if proyecto.estado == 'planificacion' %}
+                        <span class="badge bg-secondary">{{ proyecto.get_estado_display }}</span>
+                    {% elif proyecto.estado == 'en_progreso' %}
+                        <span class="badge bg-primary">{{ proyecto.get_estado_display }}</span>
+                    {% elif proyecto.estado == 'revision' %}
+                        <span class="badge bg-warning">{{ proyecto.get_estado_display }}</span>
+                    {% elif proyecto.estado == 'completado' %}
+                        <span class="badge bg-success">{{ proyecto.get_estado_display }}</span>
+                    {% else %}
+                        <span class="badge bg-danger">{{ proyecto.get_estado_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ proyecto.fecha_inicio }}</td>
+                <td>{{ proyecto.fecha_fin_estimada }}</td>
+                <td>{{ proyecto.entregables.count }}</td>
+                <td>
+                    <a href="{% url 'proyecto_update' proyecto.pk %}" class="btn btn-sm btn-warning" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'proyecto_delete' proyecto.pk %}" class="btn btn-sm btn-danger" title="Eliminar">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> No se encontraron proyectos. 
+    <a href="{% url 'proyecto_create' %}" class="alert-link">¡Crea el primero!</a>
+</div>
+{% endif %}
+
+<div class="mt-3">
+    <a href="{% url 'index' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Volver al Inicio
+    </a>
+</div>
+{% endblock %}
