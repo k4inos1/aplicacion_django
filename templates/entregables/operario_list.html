@@ -25,8 +25,7 @@
                 <select name="rol" class="form-select">
                     <option value="">Todos los roles</option>
                     {% for rol_val, rol_label in roles %}
-                    <option value="{{ rol_val }}" {% if rol_filter==rol_val %}selected{% endif %}>{{ rol_label }}
-                    </option>
+                    <option value="{{ rol_val }}" {% if rol_filter == rol_val %}selected{% endif %}>{{ rol_label }}</option>
                     {% endfor %}
                 </select>
             </div>

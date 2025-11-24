@@ -45,7 +45,7 @@ cd aplicacion_django
 
 ### 2. Configurar Entorno Virtual
 ```bash
-python -m venv venv
+py -m venv venv
 # En Windows:
 venv\Scripts\activate
 # En Linux/Mac:
@@ -80,17 +80,17 @@ DB_PORT=3306
 
 ### 5. Migrar Datos
 ```bash
-python manage.py migrate
+py manage.py migrate
 ```
 
 ### 6. Crear Superusuario
 ```bash
-python manage.py createsuperuser
+py manage.py createsuperuser
 ```
 
 ### 7. Iniciar Servidor
 ```bash
-python manage.py runserver
+py manage.py runserver
 ```
 Accede a `http://127.0.0.1:8000/`
 

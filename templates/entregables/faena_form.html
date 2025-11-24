@@ -24,7 +24,7 @@
                             <label class="form-label fw-bold">Tipo</label>
                             <select name="tipo" class="form-select" required>
                                 {% for val, label in tipos %}
-                                <option value="{{ val }}" {% if faena.tipo==val %}selected{% endif %}>{{ label }}
+                                <option value="{{ val }}" {% if faena.tipo == val %}selected{% endif %}>{{ label }}
                                 </option>
                                 {% endfor %}
                             </select>
@@ -33,7 +33,7 @@
                             <label class="form-label fw-bold">Estado</label>
                             <select name="estado" class="form-select" required>
                                 {% for val, label in estados %}
-                                <option value="{{ val }}" {% if faena.estado==val %}selected{% endif %}>{{ label }}
+                                <option value="{{ val }}" {% if faena.estado == val %}selected{% endif %}>{{ label }}
                                 </option>
                                 {% endfor %}
                             </select>
@@ -52,7 +52,7 @@
                             <select name="vehiculo" class="form-select" required>
                                 <option value="">Seleccione un vehículo...</option>
                                 {% for v in vehiculos %}
-                                <option value="{{ v.id }}" {% if faena.vehiculo_id==v.id %}selected{% endif %}>
+                                <option value="{{ v.id }}" {% if faena.vehiculo_id == v.id %}selected{% endif %}>
                                     {{ v.patente }} - {{ v.modelo }}
                                 </option>
                                 {% endfor %}
@@ -63,7 +63,7 @@
                             <select name="operario" class="form-select">
                                 <option value="">Seleccione un operario...</option>
                                 {% for o in operarios %}
-                                <option value="{{ o.id }}" {% if faena.operario_id==o.id %}selected{% endif %}>
+                                <option value="{{ o.id }}" {% if faena.operario_id == o.id %}selected{% endif %}>
                                     {{ o.nombre }} ({{ o.get_rol_display }})
                                 </option>
                                 {% endfor %}
