@@ -132,7 +132,8 @@ def vehiculo_list(request):
         'vehiculos': vehiculos,
         'busqueda': busqueda,
         'estado_filter': estado_filter,
-        'estados': Vehiculo.ESTADOS
+        'estados': Vehiculo.ESTADOS,
+        'title': 'Gestión de Vehículos'
     }
     return render(request, 'entregables/vehiculo_list.html', context)
 
@@ -301,7 +302,8 @@ def faena_list(request):
         'estado_filter': estado_filter,
         'tipo_filter': tipo_filter,
         'estados': Faena.ESTADOS,
-        'tipos': Faena.TIPOS
+        'tipos': Faena.TIPOS,
+        'title': 'Gestión de Faenas'
     }
     return render(request, 'entregables/faena_list.html', context)
 
