@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,34 +11,57 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success bg-gradient">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'index' %}">
-                Gestión de Entregables
+            <a class="navbar-brand fw-bold" href="{% url 'index' %}">
+                <i class="bi bi-tree-fill me-2"></i>Sistema Forestal
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'index' %}">Inicio</a>
+                        <a class="nav-link" href="{% url 'index' %}">Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'equipo_list' %}">Equipos</a>
+                        <a class="nav-link" href="{% url 'vehiculo_list' %}">Vehículos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'proyecto_list' %}">Proyectos</a>
+                        <a class="nav-link" href="{% url 'operario_list' %}">Operarios</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'entregable_list' %}">Entregables</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin/">Admin</a>
+                        <a class="nav-link" href="{% url 'faena_list' %}">Faenas</a>
                     </li>
                 </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/admin/">Administración</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Cerrar Sesión</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                {% else %}
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">Registrarse</a>
+                    </li>
+                </ul>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -73,4 +97,5 @@
     <script src="{% static 'js/main.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

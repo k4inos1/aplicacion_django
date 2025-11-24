@@ -5,22 +5,22 @@ urlpatterns = [
     # Index
     path('', views.index, name='index'),
     
-    # Equipos CRUD
-    path('equipos/', views.equipo_list, name='equipo_list'),
-    path('equipos/crear/', views.equipo_create, name='equipo_create'),
-    path('equipos/<int:pk>/editar/', views.equipo_update, name='equipo_update'),
-    path('equipos/<int:pk>/eliminar/', views.equipo_delete, name='equipo_delete'),
+    # Vehículos CRUD
+    path('vehiculos/', views.vehiculo_list, name='vehiculo_list'),
+    path('vehiculos/crear/', views.vehiculo_create, name='vehiculo_create'),
+    path('vehiculos/<int:pk>/editar/', views.vehiculo_update, name='vehiculo_update'),
+    path('vehiculos/<int:pk>/eliminar/', views.vehiculo_delete, name='vehiculo_delete'),
     
-    # Proyectos CRUD
-    path('proyectos/', views.proyecto_list, name='proyecto_list'),
-    path('proyectos/crear/', views.proyecto_create, name='proyecto_create'),
-    path('proyectos/<int:pk>/editar/', views.proyecto_update, name='proyecto_update'),
-    path('proyectos/<int:pk>/eliminar/', views.proyecto_delete, name='proyecto_delete'),
+    # Operarios CRUD
+    path('operarios/', views.operario_list, name='operario_list'),
+    path('operarios/crear/', views.operario_create, name='operario_create'),
+    path('operarios/<int:pk>/editar/', views.operario_update, name='operario_update'),
+    path('operarios/<int:pk>/eliminar/', views.operario_delete, name='operario_delete'),
     
-    # Entregables CRUD
-    path('entregables/', views.entregable_list, name='entregable_list'),
-    path('entregables/crear/', views.entregable_create, name='entregable_create'),
-    path('entregables/<int:pk>/', views.entregable_detail, name='entregable_detail'),
-    path('entregables/<int:pk>/editar/', views.entregable_update, name='entregable_update'),
-    path('entregables/<int:pk>/eliminar/', views.entregable_delete, name='entregable_delete'),
+    # Faenas CRUD
+    path('faenas/', views.faena_list, name='faena_list'),
+    path('faenas/crear/', views.faena_create, name='faena_create'),
+    path('faenas/<int:pk>/', views.faena_detail, name='faena_detail'),
+    path('faenas/<int:pk>/editar/', views.faena_update, name='faena_update'),
+    path('faenas/<int:pk>/eliminar/', views.faena_delete, name='faena_delete'),
 ]
