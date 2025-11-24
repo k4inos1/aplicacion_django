@@ -41,3 +41,21 @@ class OperarioForm(forms.ModelForm):
         if not Operario.validar_rut(rut):
             raise forms.ValidationError("El RUT ingresado no es válido.")
         return rut
+
+class FaenaForm(forms.ModelForm):
+    class Meta:
+        model = Faena
+        fields = ['nombre', 'tipo', 'estado', 'ubicacion', 'vehiculo', 'operario', 'fecha_inicio', 'fecha_termino', 'metros_cubicos', 'hectareas', 'observaciones']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'tipo': forms.Select(attrs={'class': 'form-select'}),
+            'estado': forms.Select(attrs={'class': 'form-select'}),
+            'ubicacion': forms.TextInput(attrs={'class': 'form-control'}),
+            'vehiculo': forms.Select(attrs={'class': 'form-select'}),
+            'operario': forms.Select(attrs={'class': 'form-select'}),
+            'fecha_inicio': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'fecha_termino': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'metros_cubicos': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'hectareas': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'observaciones': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+        }

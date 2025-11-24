@@ -7,11 +7,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Vehiculo, Operario, Mantencion, Faena, RegistroIncidente
+from .forms import VehiculoForm, OperarioForm, FaenaForm
 from datetime import date
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 # ===== AUTENTICACIÓN =====
 def login_view(request):

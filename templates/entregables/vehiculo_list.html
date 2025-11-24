@@ -18,13 +18,15 @@
     <div class="card-body">
         <form method="get" class="row g-3 mb-4">
             <div class="col-md-4">
-                <input type="text" name="q" class="form-control" placeholder="Buscar por patente, marca..." value="{{ busqueda|default:'' }}">
+                <input type="text" name="q" class="form-control" placeholder="Buscar por patente, marca..."
+                    value="{{ busqueda|default:'' }}">
             </div>
             <div class="col-md-3">
                 <select name="estado" class="form-select">
                     <option value="">Todos los estados</option>
                     {% for estado_val, estado_label in estados %}
-                    <option value="{{ estado_val }}" {% if estado_filter == estado_val %}selected{% endif %}>{{ estado_label }}</option>
+                    <option value="{{ estado_val }}" {% if estado_filter==estado_val %}selected{% endif %}>{{
+                        estado_label }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -54,14 +56,17 @@
                         <td>{{ vehiculo.marca }} {{ vehiculo.modelo }}</td>
                         <td>{{ vehiculo.año }}</td>
                         <td>
-                            <span class="badge bg-{% if vehiculo.estado == 'operativo' %}success{% elif vehiculo.estado == 'mantencion' %}warning{% else %}danger{% endif %}">
+                            <span
+                                class="badge bg-{% if vehiculo.estado == 'operativo' %}success{% elif vehiculo.estado == 'mantencion' %}warning{% else %}danger{% endif %}">
                                 {{ vehiculo.get_estado_display }}
                             </span>
                         </td>
                         <td>{{ vehiculo.horas_uso }} hrs</td>
                         <td>
-                            <a href="{% url 'vehiculo_update' vehiculo.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                            <a href="{% url 'vehiculo_delete' vehiculo.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            <a href="{% url 'vehiculo_update' vehiculo.pk %}" class="btn btn-sm btn-outline-primary"><i
+                                    class="bi bi-pencil"></i></a>
+                            <a href="{% url 'vehiculo_delete' vehiculo.pk %}" class="btn btn-sm btn-outline-danger"><i
+                                    class="bi bi-trash"></i></a>
                         </td>
                     </tr>
                     {% empty %}
