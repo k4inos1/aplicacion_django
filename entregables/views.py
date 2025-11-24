@@ -2,357 +2,439 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Q
-from .models import Equipo, Miembro, Proyecto, Entregable, Comentario
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from .models import Vehiculo, Operario, Mantencion, Faena, RegistroIncidente
 from datetime import date
+import logging
+
+logger = logging.getLogger(__name__)
 
 
+# ===== AUTENTICACIÓN =====
+def login_view(request):
+    """Vista de inicio de sesión"""
+    if request.user.is_authenticated:
+        return redirect('index')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            messages.success(request, f'Bienvenido {user.username}!')
+            next_url = request.GET.get('next', 'index')
+            return redirect(next_url)
+        else:
+            messages.error(request, 'Usuario o contraseña incorrectos.')
+    
+    return render(request, 'registration/login.html')
+
+
+def logout_view(request):
+    """Vista de cierre de sesión"""
+    logout(request)
+    messages.info(request, 'Sesión cerrada exitosamente.')
+    return redirect('login')
+
+
+def register_view(request):
+    """Vista de registro de nuevos usuarios"""
+    if request.user.is_authenticated:
+        return redirect('index')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        
+        # Validaciones
+        if not username or not password1:
+            messages.error(request, 'Usuario y contraseña son requeridos.')
+        elif password1 != password2:
+            messages.error(request, 'Las contraseñas no coinciden.')
+        elif len(password1) < 8:
+            messages.error(request, 'La contraseña debe tener al menos 8 caracteres.')
+        elif User.objects.filter(username=username).exists():
+            messages.error(request, 'El nombre de usuario ya existe.')
+        else:
+            try:
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password1
+                )
+                login(request, user)
+                messages.success(request, 'Cuenta creada exitosamente!')
+                return redirect('index')
+            except Exception as e:
+                logger.error(f'Error al crear usuario: {str(e)}')
+                messages.error(request, 'Error al crear la cuenta.')
+    
+    return render(request, 'registration/register.html')
+
+
+@login_required
 def index(request):
-    """Vista principal con dashboard"""
-    equipos_count = Equipo.objects.filter(activo=True).count()
-    proyectos_count = Proyecto.objects.count()
-    entregables_count = Entregable.objects.count()
-    miembros_count = Miembro.objects.filter(activo=True).count()
+    """Vista principal con dashboard forestal"""
+    vehiculos_count = Vehiculo.objects.filter(estado='operativo').count()
+    operarios_count = Operario.objects.filter(activo=True).count()
+    faenas_count = Faena.objects.count()
+    mantenciones_pendientes = Mantencion.objects.filter(estado='programada').count()
     
-    # Entregables recientes
-    entregables_recientes = Entregable.objects.select_related('proyecto', 'responsable').order_by('-fecha_creacion')[:5]
+    # Faenas recientes
+    faenas_recientes = Faena.objects.select_related('vehiculo', 'operario').order_by('-fecha_creacion')[:5]
     
-    # Proyectos activos
-    proyectos_activos = Proyecto.objects.filter(estado='en_progreso').select_related('equipo')[:5]
+    # Faenas activas
+    faenas_activas = Faena.objects.filter(estado='en_curso').select_related('vehiculo', 'operario')[:5]
+    
+    # Mantenciones próximas
+    mantenciones_proximas = Mantencion.objects.filter(
+        estado='programada',
+        fecha_programada__gte=date.today()
+    ).select_related('vehiculo').order_by('fecha_programada')[:5]
     
     context = {
-        'equipos_count': equipos_count,
-        'proyectos_count': proyectos_count,
-        'entregables_count': entregables_count,
-        'miembros_count': miembros_count,
-        'entregables_recientes': entregables_recientes,
-        'proyectos_activos': proyectos_activos,
+        'vehiculos_count': vehiculos_count,
+        'operarios_count': operarios_count,
+        'faenas_count': faenas_count,
+        'mantenciones_pendientes': mantenciones_pendientes,
+        'faenas_recientes': faenas_recientes,
+        'faenas_activas': faenas_activas,
+        'mantenciones_proximas': mantenciones_proximas,
     }
     return render(request, 'entregables/index.html', context)
 
 
-# ===== CRUD EQUIPOS =====
-def equipo_list(request):
-    """Lista de equipos"""
-    equipos = Equipo.objects.all().order_by('-fecha_creacion')
+# ===== CRUD VEHÍCULOS =====
+@login_required
+def vehiculo_list(request):
+    """Lista de vehículos"""
+    vehiculos = Vehiculo.objects.all().order_by('-fecha_creacion')
     busqueda = request.GET.get('q')
-    if busqueda:
-        equipos = equipos.filter(
-            Q(nombre__icontains=busqueda) | 
-            Q(descripcion__icontains=busqueda)
-        )
-    context = {'equipos': equipos, 'busqueda': busqueda}
-    return render(request, 'entregables/equipo_list.html', context)
-
-
-def equipo_create(request):
-    """Crear nuevo equipo"""
-    if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        descripcion = request.POST.get('descripcion', '')
-        activo = request.POST.get('activo') == 'on'
-        
-        if nombre:
-            Equipo.objects.create(
-                nombre=nombre,
-                descripcion=descripcion,
-                activo=activo
-            )
-            messages.success(request, 'Equipo creado exitosamente.')
-            return redirect('equipo_list')
-        else:
-            messages.error(request, 'El nombre del equipo es requerido.')
-    
-    return render(request, 'entregables/equipo_form.html', {'action': 'Crear'})
-
-
-def equipo_update(request, pk):
-    """Actualizar equipo"""
-    equipo = get_object_or_404(Equipo, pk=pk)
-    
-    if request.method == 'POST':
-        equipo.nombre = request.POST.get('nombre')
-        equipo.descripcion = request.POST.get('descripcion', '')
-        equipo.activo = request.POST.get('activo') == 'on'
-        
-        if equipo.nombre:
-            equipo.save()
-            messages.success(request, 'Equipo actualizado exitosamente.')
-            return redirect('equipo_list')
-        else:
-            messages.error(request, 'El nombre del equipo es requerido.')
-    
-    context = {'equipo': equipo, 'action': 'Actualizar'}
-    return render(request, 'entregables/equipo_form.html', context)
-
-
-def equipo_delete(request, pk):
-    """Eliminar equipo"""
-    equipo = get_object_or_404(Equipo, pk=pk)
-    
-    if request.method == 'POST':
-        equipo.delete()
-        messages.success(request, 'Equipo eliminado exitosamente.')
-        return redirect('equipo_list')
-    
-    context = {'equipo': equipo}
-    return render(request, 'entregables/equipo_confirm_delete.html', context)
-
-
-# ===== CRUD PROYECTOS =====
-def proyecto_list(request):
-    """Lista de proyectos"""
-    proyectos = Proyecto.objects.select_related('equipo').order_by('-fecha_inicio')
     estado_filter = request.GET.get('estado')
+    
+    if busqueda:
+        vehiculos = vehiculos.filter(
+            Q(patente__icontains=busqueda) | 
+            Q(marca__icontains=busqueda) |
+            Q(modelo__icontains=busqueda)
+        )
+    if estado_filter:
+        vehiculos = vehiculos.filter(estado=estado_filter)
+    
+    context = {
+        'vehiculos': vehiculos,
+        'busqueda': busqueda,
+        'estado_filter': estado_filter,
+        'estados': Vehiculo.ESTADOS
+    }
+    return render(request, 'entregables/vehiculo_list.html', context)
+
+
+@login_required
+def vehiculo_create(request):
+    """Crear nuevo vehículo usando ModelForm"""
+    if request.method == 'POST':
+        form = VehiculoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Vehículo registrado exitosamente.')
+            return redirect('vehiculo_list')
+        else:
+            messages.error(request, 'Por favor corrija los errores en el formulario.')
+    else:
+        form = VehiculoForm()
+    
+    context = {
+        'form': form,
+        'title': 'Registrar Nuevo Vehículo',
+        'back_url': 'vehiculo_list'
+    }
+    return render(request, 'entregables/vehiculo_form.html', context)
+
+
+@login_required
+def vehiculo_update(request, pk):
+    """Actualizar vehículo usando ModelForm"""
+    vehiculo = get_object_or_404(Vehiculo, pk=pk)
+    
+    if request.method == 'POST':
+        form = VehiculoForm(request.POST, instance=vehiculo)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Vehículo actualizado exitosamente.')
+            return redirect('vehiculo_list')
+        else:
+            messages.error(request, 'Por favor corrija los errores en el formulario.')
+    else:
+        form = VehiculoForm(instance=vehiculo)
+    
+    context = {
+        'form': form,
+        'title': f'Editar Vehículo: {vehiculo.patente}',
+        'back_url': 'vehiculo_list'
+    }
+    return render(request, 'entregables/vehiculo_form.html', context)
+
+
+@login_required
+def vehiculo_delete(request, pk):
+    """Eliminar vehículo"""
+    vehiculo = get_object_or_404(Vehiculo, pk=pk)
+    if request.method == 'POST':
+        vehiculo.delete()
+        messages.success(request, 'Vehículo eliminado exitosamente.')
+        return redirect('vehiculo_list')
+    
+    context = {
+        'object': vehiculo,
+        'title': 'Eliminar Vehículo',
+        'back_url': 'vehiculo_list'
+    }
+    return render(request, 'entregables/vehiculo_confirm_delete.html', context)
+
+
+# ===== CRUD OPERARIOS =====
+@login_required
+def operario_list(request):
+    """Lista de operarios"""
+    operarios = Operario.objects.all().order_by('nombre')
+    context = {
+        'operarios': operarios,
+        'title': 'Gestión de Operarios'
+    }
+    return render(request, 'entregables/operario_list.html', context)
+
+
+@login_required
+def operario_create(request):
+    """Crear nuevo operario usando ModelForm"""
+    if request.method == 'POST':
+        form = OperarioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Operario registrado exitosamente.')
+            return redirect('operario_list')
+        else:
+            messages.error(request, 'Por favor corrija los errores en el formulario.')
+    else:
+        form = OperarioForm()
+    
+    context = {
+        'form': form,
+        'title': 'Registrar Nuevo Operario',
+        'back_url': 'operario_list'
+    }
+    return render(request, 'entregables/operario_form.html', context)
+
+
+@login_required
+def operario_update(request, pk):
+    """Actualizar operario usando ModelForm"""
+    operario = get_object_or_404(Operario, pk=pk)
+    
+    if request.method == 'POST':
+        form = OperarioForm(request.POST, instance=operario)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Operario actualizado exitosamente.')
+            return redirect('operario_list')
+        else:
+            messages.error(request, 'Por favor corrija los errores en el formulario.')
+    else:
+        form = OperarioForm(instance=operario)
+    
+    context = {
+        'form': form,
+        'title': f'Editar Operario: {operario.nombre}',
+        'back_url': 'operario_list'
+    }
+    return render(request, 'entregables/operario_form.html', context)
+
+
+@login_required
+def operario_delete(request, pk):
+    """Eliminar operario"""
+    operario = get_object_or_404(Operario, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            operario.delete()
+            messages.success(request, 'Operario eliminado exitosamente.')
+            return redirect('operario_list')
+        except Exception as e:
+            logger.error(f'Error al eliminar operario: {str(e)}')
+            messages.error(request, 'Error al eliminar operario.')
+    
+    context = {'operario': operario}
+    return render(request, 'entregables/operario_confirm_delete.html', context)
+
+
+# ===== CRUD FAENAS =====
+@login_required
+def faena_list(request):
+    """Lista de faenas"""
+    faenas = Faena.objects.select_related('vehiculo', 'operario').order_by('-fecha_inicio')
+    estado_filter = request.GET.get('estado')
+    tipo_filter = request.GET.get('tipo')
     busqueda = request.GET.get('q')
     
     if estado_filter:
-        proyectos = proyectos.filter(estado=estado_filter)
+        faenas = faenas.filter(estado=estado_filter)
+    if tipo_filter:
+        faenas = faenas.filter(tipo=tipo_filter)
     if busqueda:
-        proyectos = proyectos.filter(
+        faenas = faenas.filter(
             Q(nombre__icontains=busqueda) | 
-            Q(descripcion__icontains=busqueda)
+            Q(ubicacion__icontains=busqueda)
         )
     
     context = {
-        'proyectos': proyectos, 
+        'faenas': faenas,
         'busqueda': busqueda,
         'estado_filter': estado_filter,
-        'estados': Proyecto.ESTADOS
+        'tipo_filter': tipo_filter,
+        'estados': Faena.ESTADOS,
+        'tipos': Faena.TIPOS
     }
-    return render(request, 'entregables/proyecto_list.html', context)
+    return render(request, 'entregables/faena_list.html', context)
 
 
-def proyecto_create(request):
-    """Crear nuevo proyecto"""
+@login_required
+def faena_create(request):
+    """Crear nueva faena"""
     if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        descripcion = request.POST.get('descripcion', '')
-        equipo_id = request.POST.get('equipo')
-        estado = request.POST.get('estado', 'planificacion')
-        fecha_inicio = request.POST.get('fecha_inicio')
-        fecha_fin_estimada = request.POST.get('fecha_fin_estimada')
-        presupuesto = request.POST.get('presupuesto')
-        
-        if nombre and equipo_id and fecha_inicio and fecha_fin_estimada:
-            Proyecto.objects.create(
+        try:
+            nombre = request.POST.get('nombre')
+            if not nombre:
+                raise ValueError('El nombre de la faena es requerido')
+            
+            Faena.objects.create(
                 nombre=nombre,
-                descripcion=descripcion,
-                equipo_id=equipo_id,
-                estado=estado,
-                fecha_inicio=fecha_inicio,
-                fecha_fin_estimada=fecha_fin_estimada,
-                presupuesto=presupuesto if presupuesto else None
+                tipo=request.POST.get('tipo'),
+                ubicacion=request.POST.get('ubicacion'),
+                vehiculo_id=request.POST.get('vehiculo'),
+                operario_id=request.POST.get('operario') or None,
+                estado=request.POST.get('estado', 'planificada'),
+                fecha_inicio=request.POST.get('fecha_inicio'),
+                fecha_termino=request.POST.get('fecha_termino') or None,
+                metros_cubicos=request.POST.get('metros_cubicos') or None,
+                hectareas=request.POST.get('hectareas') or None,
+                observaciones=request.POST.get('observaciones', '')
             )
-            messages.success(request, 'Proyecto creado exitosamente.')
-            return redirect('proyecto_list')
-        else:
-            messages.error(request, 'Todos los campos requeridos deben ser completados.')
-    
-    equipos = Equipo.objects.filter(activo=True)
-    context = {
-        'action': 'Crear',
-        'equipos': equipos,
-        'estados': Proyecto.ESTADOS
-    }
-    return render(request, 'entregables/proyecto_form.html', context)
-
-
-def proyecto_update(request, pk):
-    """Actualizar proyecto"""
-    proyecto = get_object_or_404(Proyecto, pk=pk)
-    
-    if request.method == 'POST':
-        proyecto.nombre = request.POST.get('nombre')
-        proyecto.descripcion = request.POST.get('descripcion', '')
-        proyecto.equipo_id = request.POST.get('equipo')
-        proyecto.estado = request.POST.get('estado')
-        proyecto.fecha_inicio = request.POST.get('fecha_inicio')
-        proyecto.fecha_fin_estimada = request.POST.get('fecha_fin_estimada')
-        fecha_fin_real = request.POST.get('fecha_fin_real')
-        proyecto.fecha_fin_real = fecha_fin_real if fecha_fin_real else None
-        presupuesto = request.POST.get('presupuesto')
-        proyecto.presupuesto = presupuesto if presupuesto else None
-        
-        if proyecto.nombre and proyecto.equipo_id and proyecto.fecha_inicio and proyecto.fecha_fin_estimada:
-            proyecto.save()
-            messages.success(request, 'Proyecto actualizado exitosamente.')
-            return redirect('proyecto_list')
-        else:
-            messages.error(request, 'Todos los campos requeridos deben ser completados.')
-    
-    equipos = Equipo.objects.filter(activo=True)
-    context = {
-        'proyecto': proyecto,
-        'action': 'Actualizar',
-        'equipos': equipos,
-        'estados': Proyecto.ESTADOS
-    }
-    return render(request, 'entregables/proyecto_form.html', context)
-
-
-def proyecto_delete(request, pk):
-    """Eliminar proyecto"""
-    proyecto = get_object_or_404(Proyecto, pk=pk)
-    
-    if request.method == 'POST':
-        proyecto.delete()
-        messages.success(request, 'Proyecto eliminado exitosamente.')
-        return redirect('proyecto_list')
-    
-    context = {'proyecto': proyecto}
-    return render(request, 'entregables/proyecto_confirm_delete.html', context)
-
-
-# ===== CRUD ENTREGABLES =====
-def entregable_list(request):
-    """Lista de entregables"""
-    entregables = Entregable.objects.select_related('proyecto', 'responsable').order_by('-fecha_creacion')
-    estado_filter = request.GET.get('estado')
-    prioridad_filter = request.GET.get('prioridad')
-    busqueda = request.GET.get('q')
-    
-    if estado_filter:
-        entregables = entregables.filter(estado=estado_filter)
-    if prioridad_filter:
-        entregables = entregables.filter(prioridad=prioridad_filter)
-    if busqueda:
-        entregables = entregables.filter(
-            Q(titulo__icontains=busqueda) | 
-            Q(descripcion__icontains=busqueda)
-        )
-    
-    context = {
-        'entregables': entregables,
-        'busqueda': busqueda,
-        'estado_filter': estado_filter,
-        'prioridad_filter': prioridad_filter,
-        'estados': Entregable.ESTADOS,
-        'prioridades': Entregable.PRIORIDADES
-    }
-    return render(request, 'entregables/entregable_list.html', context)
-
-
-def entregable_create(request):
-    """Crear nuevo entregable"""
-    if request.method == 'POST':
-        titulo = request.POST.get('titulo')
-        descripcion = request.POST.get('descripcion', '')
-        proyecto_id = request.POST.get('proyecto')
-        responsable_id = request.POST.get('responsable')
-        estado = request.POST.get('estado', 'pendiente')
-        prioridad = request.POST.get('prioridad', 'media')
-        fecha_vencimiento = request.POST.get('fecha_vencimiento')
-        porcentaje_completado = request.POST.get('porcentaje_completado', 0)
-        
-        if titulo and proyecto_id and estado and fecha_vencimiento:
-            entregable = Entregable.objects.create(
-                titulo=titulo,
-                descripcion=descripcion,
-                proyecto_id=proyecto_id,
-                responsable_id=responsable_id if responsable_id else None,
-                estado=estado,
-                prioridad=prioridad,
-                fecha_vencimiento=fecha_vencimiento,
-                porcentaje_completado=porcentaje_completado
-            )
+            messages.success(request, 'Faena creada exitosamente.')
+            return redirect('faena_list')
             
-            # Manejar archivo adjunto
-            if 'archivo' in request.FILES:
-                entregable.archivo = request.FILES['archivo']
-                entregable.save()
-            
-            messages.success(request, 'Entregable creado exitosamente.')
-            return redirect('entregable_list')
-        else:
-            messages.error(request, 'Todos los campos requeridos deben ser completados.')
+        except ValueError as e:
+            messages.error(request, f'Error: {str(e)}')
+        except Exception as e:
+            logger.error(f'Error al crear faena: {str(e)}')
+            messages.error(request, 'Error al crear faena.')
     
-    proyectos = Proyecto.objects.all()
-    miembros = Miembro.objects.filter(activo=True)
+    vehiculos = Vehiculo.objects.filter(estado='operativo')
+    operarios = Operario.objects.filter(activo=True)
     
     context = {
         'action': 'Crear',
-        'proyectos': proyectos,
-        'miembros': miembros,
-        'estados': Entregable.ESTADOS,
-        'prioridades': Entregable.PRIORIDADES
+        'vehiculos': vehiculos,
+        'operarios': operarios,
+        'tipos': Faena.TIPOS,
+        'estados': Faena.ESTADOS
     }
-    return render(request, 'entregables/entregable_form.html', context)
+    return render(request, 'entregables/faena_form.html', context)
 
 
-def entregable_update(request, pk):
-    """Actualizar entregable"""
-    entregable = get_object_or_404(Entregable, pk=pk)
+@login_required
+def faena_update(request, pk):
+    """Actualizar faena"""
+    faena = get_object_or_404(Faena, pk=pk)
     
     if request.method == 'POST':
-        entregable.titulo = request.POST.get('titulo')
-        entregable.descripcion = request.POST.get('descripcion', '')
-        entregable.proyecto_id = request.POST.get('proyecto')
-        responsable_id = request.POST.get('responsable')
-        entregable.responsable_id = responsable_id if responsable_id else None
-        entregable.estado = request.POST.get('estado')
-        entregable.prioridad = request.POST.get('prioridad')
-        entregable.fecha_vencimiento = request.POST.get('fecha_vencimiento')
-        entregable.porcentaje_completado = request.POST.get('porcentaje_completado', 0)
-        
-        if entregable.titulo and entregable.proyecto_id and entregable.estado and entregable.fecha_vencimiento:
-            # Manejar archivo adjunto
-            if 'archivo' in request.FILES:
-                entregable.archivo = request.FILES['archivo']
+        try:
+            faena.nombre = request.POST.get('nombre')
+            faena.tipo = request.POST.get('tipo')
+            faena.ubicacion = request.POST.get('ubicacion')
+            faena.vehiculo_id = request.POST.get('vehiculo')
+            faena.operario_id = request.POST.get('operario') or None
+            faena.estado = request.POST.get('estado')
+            faena.fecha_inicio = request.POST.get('fecha_inicio')
+            faena.fecha_termino = request.POST.get('fecha_termino') or None
+            faena.metros_cubicos = request.POST.get('metros_cubicos') or None
+            faena.hectareas = request.POST.get('hectareas') or None
+            faena.observaciones = request.POST.get('observaciones', '')
             
-            entregable.save()
-            messages.success(request, 'Entregable actualizado exitosamente.')
-            return redirect('entregable_list')
-        else:
-            messages.error(request, 'Todos los campos requeridos deben ser completados.')
+            faena.save()
+            messages.success(request, 'Faena actualizada exitosamente.')
+            return redirect('faena_list')
+            
+        except Exception as e:
+            logger.error(f'Error al actualizar faena: {str(e)}')
+            messages.error(request, 'Error al actualizar faena.')
     
-    proyectos = Proyecto.objects.all()
-    miembros = Miembro.objects.filter(activo=True)
+    vehiculos = Vehiculo.objects.all()
+    operarios = Operario.objects.filter(activo=True)
     
     context = {
-        'entregable': entregable,
+        'faena': faena,
         'action': 'Actualizar',
-        'proyectos': proyectos,
-        'miembros': miembros,
-        'estados': Entregable.ESTADOS,
-        'prioridades': Entregable.PRIORIDADES
+        'vehiculos': vehiculos,
+        'operarios': operarios,
+        'tipos': Faena.TIPOS,
+        'estados': Faena.ESTADOS
     }
-    return render(request, 'entregables/entregable_form.html', context)
+    return render(request, 'entregables/faena_form.html', context)
 
 
-def entregable_delete(request, pk):
-    """Eliminar entregable"""
-    entregable = get_object_or_404(Entregable, pk=pk)
+@login_required
+def faena_delete(request, pk):
+    """Eliminar faena"""
+    faena = get_object_or_404(Faena, pk=pk)
     
     if request.method == 'POST':
-        entregable.delete()
-        messages.success(request, 'Entregable eliminado exitosamente.')
-        return redirect('entregable_list')
+        try:
+            faena.delete()
+            messages.success(request, 'Faena eliminada exitosamente.')
+            return redirect('faena_list')
+        except Exception as e:
+            logger.error(f'Error al eliminar faena: {str(e)}')
+            messages.error(request, 'Error al eliminar faena.')
     
-    context = {'entregable': entregable}
-    return render(request, 'entregables/entregable_confirm_delete.html', context)
+    context = {'faena': faena}
+    return render(request, 'entregables/faena_confirm_delete.html', context)
 
 
-def entregable_detail(request, pk):
-    """Detalle de entregable con comentarios"""
-    entregable = get_object_or_404(Entregable, pk=pk)
-    comentarios = entregable.comentarios.all()
+@login_required
+def faena_detail(request, pk):
+    """Detalle de faena con incidentes"""
+    faena = get_object_or_404(Faena, pk=pk)
+    incidentes = faena.incidentes.all()
     
     if request.method == 'POST':
-        autor = request.POST.get('autor')
-        contenido = request.POST.get('contenido')
-        
-        if autor and contenido:
-            Comentario.objects.create(
-                entregable=entregable,
-                autor=autor,
-                contenido=contenido
+        try:
+            RegistroIncidente.objects.create(
+                faena=faena,
+                tipo=request.POST.get('tipo'),
+                gravedad=request.POST.get('gravedad'),
+                descripcion=request.POST.get('descripcion'),
+                medidas_tomadas=request.POST.get('medidas_tomadas', ''),
+                reportado_por=request.POST.get('reportado_por')
             )
-            messages.success(request, 'Comentario agregado exitosamente.')
-            return redirect('entregable_detail', pk=pk)
+            messages.success(request, 'Incidente registrado exitosamente.')
+            return redirect('faena_detail', pk=pk)
+        except Exception as e:
+            logger.error(f'Error al registrar incidente: {str(e)}')
+            messages.error(request, 'Error al registrar incidente.')
     
     context = {
-        'entregable': entregable,
-        'comentarios': comentarios
+        'faena': faena,
+        'incidentes': incidentes,
+        'tipos_incidente': RegistroIncidente.TIPOS,
+        'gravedades': RegistroIncidente.GRAVEDAD
     }
-    return render(request, 'entregables/entregable_detail.html', context)
-
+    return render(request, 'entregables/faena_detail.html', context)
