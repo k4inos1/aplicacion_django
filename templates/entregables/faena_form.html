@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Faena - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="bi bi-tree"></i> {{ action }} Faena</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre de la Faena</label>
+                        <input type="text" name="nombre" class="form-control" value="{{ faena.nombre|default:'' }}"
+                            required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Tipo</label>
+                            <select name="tipo" class="form-select" required>
+                                {% for val, label in tipos %}
+                                <option value="{{ val }}" {% if faena.tipo==val %}selected{% endif %}>{{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Estado</label>
+                            <select name="estado" class="form-select" required>
+                                {% for val, label in estados %}
+                                <option value="{{ val }}" {% if faena.estado==val %}selected{% endif %}>{{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Ubicación</label>
+                        <input type="text" name="ubicacion" class="form-control"
+                            value="{{ faena.ubicacion|default:'' }}" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Vehículo Asignado</label>
+                            <select name="vehiculo" class="form-select" required>
+                                <option value="">Seleccione un vehículo...</option>
+                                {% for v in vehiculos %}
+                                <option value="{{ v.id }}" {% if faena.vehiculo_id==v.id %}selected{% endif %}>
+                                    {{ v.patente }} - {{ v.modelo }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Operario Responsable</label>
+                            <select name="operario" class="form-select">
+                                <option value="">Seleccione un operario...</option>
+                                {% for o in operarios %}
+                                <option value="{{ o.id }}" {% if faena.operario_id==o.id %}selected{% endif %}>
+                                    {{ o.nombre }} ({{ o.get_rol_display }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Fecha Inicio</label>
+                            <input type="date" name="fecha_inicio" class="form-control"
+                                value="{{ faena.fecha_inicio|date:'Y-m-d' }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Fecha Término (Estimada)</label>
+                            <input type="date" name="fecha_termino" class="form-control"
+                                value="{{ faena.fecha_termino|date:'Y-m-d'|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Metros Cúbicos (m³)</label>
+                            <input type="number" step="0.01" name="metros_cubicos" class="form-control"
+                                value="{{ faena.metros_cubicos|default:'' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Hectáreas (ha)</label>
+                            <input type="number" step="0.01" name="hectareas" class="form-control"
+                                value="{{ faena.hectareas|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Observaciones</label>
+                        <textarea name="observaciones" class="form-control"
+                            rows="3">{{ faena.observaciones|default:'' }}</textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'faena_list' %}" class="btn btn-secondary me-md-2">Cancelar</a>
+                        <button type="submit" class="btn btn-warning">Guardar Faena</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

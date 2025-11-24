@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ faena.nombre }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="bi bi-tree"></i> {{ faena.nombre }}</h2>
+        <p class="text-muted">{{ faena.ubicacion }}</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <span
+            class="badge bg-{% if faena.estado == 'en_curso' %}success{% elif faena.estado == 'planificada' %}info{% elif faena.estado == 'detenida' %}danger{% else %}secondary{% endif %} fs-5">
+            {{ faena.get_estado_display }}
+        </span>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Información General</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Tipo</dt>
+                    <dd class="col-sm-8">{{ faena.get_tipo_display }}</dd>
+
+                    <dt class="col-sm-4">Vehículo</dt>
+                    <dd class="col-sm-8">{{ faena.vehiculo.patente }} - {{ faena.vehiculo.modelo }}</dd>
+
+                    <dt class="col-sm-4">Operario</dt>
+                    <dd class="col-sm-8">{{ faena.operario.nombre|default:"Sin asignar" }}</dd>
+
+                    <dt class="col-sm-4">Fecha Inicio</dt>
+                    <dd class="col-sm-8">{{ faena.fecha_inicio }}</dd>
+
+                    <dt class="col-sm-4">Fecha Término</dt>
+                    <dd class="col-sm-8">{{ faena.fecha_termino|default:"En curso" }}</dd>
+
+                    {% if faena.metros_cubicos %}
+                    <dt class="col-sm-4">Producción</dt>
+                    <dd class="col-sm-8">{{ faena.metros_cubicos }} m³</dd>
+                    {% endif %}
+
+                    {% if faena.hectareas %}
+                    <dt class="col-sm-4">Área</dt>
+                    <dd class="col-sm-8">{{ faena.hectareas }} ha</dd>
+                    {% endif %}
+                </dl>
+                {% if faena.observaciones %}
+                <div class="alert alert-secondary">
+                    <strong>Observaciones:</strong><br>
+                    {{ faena.observaciones|linebreaks }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Incidentes</h5>
+                <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal"
+                    data-bs-target="#incidenteModal">
+                    <i class="bi bi-exclamation-triangle"></i> Reportar
+                </button>
+            </div>
+            <div class="card-body">
+                {% if incidentes %}
+                <div class="list-group">
+                    {% for incidente in incidentes %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ incidente.get_tipo_display }}</h6>
+                            <small class="text-muted">{{ incidente.fecha_hora|date:"d/m H:i" }}</small>
+                        </div>
+                        <p class="mb-1">{{ incidente.descripcion }}</p>
+                        <small class="text-danger fw-bold">{{ incidente.get_gravedad_display }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center my-4">No hay incidentes registrados.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Reportar Incidente -->
+<div class="modal fade" id="incidenteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Reportar Incidente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Incidente</label>
+                        <select name="tipo" class="form-select" required>
+                            {% for val, label in tipos_incidente %}
+                            <option value="{{ val }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Gravedad</label>
+                        <select name="gravedad" class="form-select" required>
+                            {% for val, label in gravedades %}
+                            <option value="{{ val }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea name="descripcion" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Medidas Tomadas</label>
+                        <textarea name="medidas_tomadas" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reportado Por</label>
+                        <input type="text" name="reportado_por" class="form-control" value="{{ user.username }}"
+                            readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Registrar Incidente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
