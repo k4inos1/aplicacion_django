@@ -94,6 +94,24 @@ py manage.py runserver
 ```
 Accede a `http://127.0.0.1:8000/`
 
+## 🛠️ Herramientas de Desarrollo y Gestión
+
+El proyecto incluye comandos personalizados para facilitar el desarrollo y pruebas:
+
+### Poblar Base de Datos (Seeding)
+Genera un gran volumen de datos de prueba (vehículos, operarios, faenas, etc.) para verificar el rendimiento y la paginación.
+```bash
+py manage.py seed_db
+```
+
+### Aleatorizar Datos (Randomize)
+Actualiza **todos** los registros existentes con valores aleatorios. Útil para probar cambios de estado, filtros y visualización de datos variados sin crear nuevos registros.
+```bash
+py manage.py randomize_status
+```
+*Nota: Este comando modifica datos existentes, incluyendo estados, fechas, costos y asignaciones.*
+
+
 ## 🔒 Seguridad Implementada
 
 ### Autenticación
