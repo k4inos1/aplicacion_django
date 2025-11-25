@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'entregables',
 ]
 
@@ -77,14 +78,14 @@ WSGI_APPLICATION = 'gestion_entregables.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'gestion_forestal',
-        'USER': 'ADMIN',
-        'PASSWORD': 'ForestalDB2025!',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'ENGINE': config('DB_ENGINE', default='django.db.backends.mysql'),
+        'NAME': config('DB_NAME', default='gestion_forestal'),
+        'USER': config('DB_USER', default='ADMIN'),
+        'PASSWORD': config('DB_PASSWORD', default='ForestalDB2025!'),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': config('DB_PORT', default='3306'),
         'OPTIONS': {
-            'charset': 'utf8mb4',
+            'charset': config('DB_CHARSET', default='utf8mb4'),
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }

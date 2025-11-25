@@ -26,7 +26,9 @@ class Command(BaseCommand):
                     año=random.randint(2010, 2025),
                     estado=random.choice(['operativo', 'operativo', 'operativo', 'en_mantencion', 'fuera_servicio']),
                     horas_uso=random.randint(0, 15000),
-                    fecha_adquisicion=timezone.now().date() - timedelta(days=random.randint(0, 3000))
+                    fecha_adquisicion=timezone.now().date() - timedelta(days=random.randint(0, 3000)),
+                    fecha_creacion=timezone.now() - timedelta(days=random.randint(0, 3000)), # Fecha registro histórico
+                    activo=True
                 )
                 vehiculos.append(v)
                 if i % 10 == 0: self.stdout.write(f'Vehículo creado: {v.patente}')
@@ -49,7 +51,7 @@ class Command(BaseCommand):
                     rol=random.choice(roles),
                     licencia=random.choice(['A1', 'A2', 'A3', 'A4', 'A5', 'D', 'B']),
                     fecha_ingreso=timezone.now().date() - timedelta(days=random.randint(0, 4000)),
-                    activo=random.choice([True, True, True, False])
+                    activo=True
                 )
                 operarios.append(o)
                 if i % 10 == 0: self.stdout.write(f'Operario creado: {o.nombre}')
@@ -75,7 +77,8 @@ class Command(BaseCommand):
                     fecha_inicio=timezone.now().date() - timedelta(days=random.randint(0, 365)),
                     metros_cubicos=random.uniform(100, 10000),
                     hectareas=random.uniform(5, 200),
-                    observaciones="Generada automáticamente por seed_db"
+                    observaciones="Generada automáticamente por seed_db",
+                    activo=True
                 )
                 faenas.append(f)
                 if i % 20 == 0: self.stdout.write(f'Faena creada: {f.nombre}')

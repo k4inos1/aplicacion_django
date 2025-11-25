@@ -24,10 +24,26 @@ class Command(BaseCommand):
             v.modelo = f'Modelo-{random.randint(100, 999)}'
             v.año = random.randint(1995, 2024)
             v.estado = random.choice([x[0] for x in Vehiculo.ESTADOS])
-            v.horas_uso = random.randint(0, 20000)
+            
+            # Lógica para forzar mantención en ~20% de los casos
+            if random.random() < 0.2:
+                v.horas_uso = random.randint(1, 40) * 500
+            else:
+                v.horas_uso = random.randint(1, 40) * 500
+                
             v.capacidad_carga = random.uniform(5.0, 30.0)
             v.fecha_adquisicion = timezone.now().date() - timedelta(days=random.randint(0, 5000))
+            
+            # Fecha de creación posterior a adquisición
+            dias_despues = random.randint(0, 30)
+            fecha_registro = v.fecha_adquisicion + timedelta(days=dias_despues)
+            hora = random.randint(8, 18)
+            minuto = random.randint(0, 59)
+            v.fecha_creacion = timezone.make_aware(
+                timezone.datetime.combine(fecha_registro, timezone.datetime.min.time().replace(hour=hora, minute=minuto))
+            )
             v.observaciones = f"Obs aleatoria {random.randint(1, 100)}"
+            v.activo = random.random() > 0.1  # 90% activo
             v.save()
         self.stdout.write(f'Aleatorizados {len(vehiculos)} vehículos.')
 
@@ -39,7 +55,7 @@ class Command(BaseCommand):
             o.licencia = random.choice(['A1', 'A2', 'A4', 'D'])
             o.telefono = f'+569{random.randint(10000000, 99999999)}'
             o.fecha_ingreso = timezone.now().date() - timedelta(days=random.randint(0, 3000))
-            o.activo = random.choice([True, False])
+            o.activo = random.random() > 0.1  # 90% activo
             o.save()
         self.stdout.write(f'Aleatorizados {len(operarios)} operarios.')
 
@@ -57,6 +73,7 @@ class Command(BaseCommand):
             f.metros_cubicos = random.uniform(50, 5000)
             f.hectareas = random.uniform(1, 100)
             f.observaciones = f"Faena random {random.randint(1, 100)}"
+            f.activo = random.random() > 0.1  # 90% activo
             f.save()
         self.stdout.write(f'Aleatorizadas {len(faenas)} faenas.')
 

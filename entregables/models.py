@@ -49,6 +49,7 @@ class Vehiculo(models.Model):
     fecha_adquisicion = models.DateField(verbose_name="Fecha de Adquisición")
     fecha_creacion = models.DateTimeField(default=timezone.now, verbose_name="Fecha de Registro")
     observaciones = models.TextField(blank=True, verbose_name="Observaciones")
+    activo = models.BooleanField(default=True, verbose_name="Activo")
     
     class Meta:
         verbose_name = "Vehículo"
@@ -250,6 +251,7 @@ class Faena(models.Model):
         help_text="Superficie trabajada"
     )
     observaciones = models.TextField(blank=True, verbose_name="Observaciones")
+    activo = models.BooleanField(default=True, verbose_name="Activo")
     fecha_creacion = models.DateTimeField(default=timezone.now, verbose_name="Fecha de Registro")
     
     class Meta:

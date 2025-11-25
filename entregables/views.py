@@ -1,7 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Sum
+
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
@@ -78,7 +79,6 @@ def register_view(request):
     
     return render(request, 'registration/register.html')
 
-
 @login_required
 def index(request):
     """Vista principal con dashboard forestal"""
@@ -86,6 +86,10 @@ def index(request):
     operarios_count = Operario.objects.filter(activo=True).count()
     faenas_count = Faena.objects.count()
     mantenciones_pendientes = Mantencion.objects.filter(estado='programada').count()
+    
+    # Estadísticas Globales
+    produccion_total = Faena.objects.aggregate(Sum('metros_cubicos'))['metros_cubicos__sum'] or 0
+    costo_mantencion = Mantencion.objects.aggregate(Sum('costo'))['costo__sum'] or 0
     
     # Faenas recientes
     faenas_recientes = Faena.objects.select_related('vehiculo', 'operario').order_by('-fecha_creacion')[:5]
@@ -99,14 +103,24 @@ def index(request):
         fecha_programada__gte=date.today()
     ).select_related('vehiculo').order_by('fecha_programada')[:5]
     
+    # Vehículos en mantención
+    vehiculos_mantencion = Vehiculo.objects.filter(estado='mantencion').order_by('-horas_uso')[:5]
+    
+    # Incidentes Recientes
+    incidentes_recientes = RegistroIncidente.objects.select_related('faena').order_by('-fecha_incidente')[:5]
+    
     context = {
         'vehiculos_count': vehiculos_count,
         'operarios_count': operarios_count,
         'faenas_count': faenas_count,
         'mantenciones_pendientes': mantenciones_pendientes,
+        'produccion_total': produccion_total,
+        'costo_mantencion': costo_mantencion,
         'faenas_recientes': faenas_recientes,
         'faenas_activas': faenas_activas,
         'mantenciones_proximas': mantenciones_proximas,
+        'vehiculos_mantencion': vehiculos_mantencion,
+        'incidentes_recientes': incidentes_recientes,
     }
     return render(request, 'entregables/index.html', context)
 
