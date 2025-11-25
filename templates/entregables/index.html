@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load humanize %}
 
 {% block title %}Inicio - {{ block.super }}{% endblock %}
 
@@ -6,14 +7,14 @@
 <div class="row mb-4">
     <div class="col-md-12">
         <h1 class="display-4"><i class="bi bi-speedometer2"></i> Dashboard Forestal</h1>
-        <p class="lead">Gestión de Maquinaria y Operaciones Forestales</p>
+        <p class="lead">Gestión Integral de Operaciones, Maquinaria y Seguridad</p>
     </div>
 </div>
 
-<!-- Estadísticas -->
+<!-- Estadísticas Principales -->
 <div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card card-stat bg-primary text-white">
+    <div class="col-md-3">
+        <div class="card card-stat bg-primary text-white h-100">
             <div class="card-body text-center">
                 <i class="bi bi-truck fs-1"></i>
                 <h3 class="mt-2">{{ vehiculos_count }}</h3>
@@ -21,8 +22,8 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card card-stat bg-success text-white">
+    <div class="col-md-3">
+        <div class="card card-stat bg-success text-white h-100">
             <div class="card-body text-center">
                 <i class="bi bi-people fs-1"></i>
                 <h3 class="mt-2">{{ operarios_count }}</h3>
@@ -30,67 +31,164 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card card-stat bg-warning text-dark">
+    <div class="col-md-3">
+        <div class="card card-stat bg-info text-white h-100">
             <div class="card-body text-center">
                 <i class="bi bi-tree fs-1"></i>
-                <h3 class="mt-2">{{ faenas_count }}</h3>
-                <p class="mb-0">Faenas en Curso</p>
+                <h3 class="mt-2">{{ produccion_total|intcomma }} m³</h3>
+                <p class="mb-0">Producción Total</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat bg-danger text-white h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-exclamation-triangle fs-1"></i>
+                <h3 class="mt-2">{{ mantenciones_pendientes }}</h3>
+                <p class="mb-0">Mantenciones Pendientes</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Faenas Activas -->
 <div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header bg-success text-white">
+    <!-- Faenas en Curso -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="bi bi-tree"></i> Faenas en Curso</h5>
+                <span class="badge bg-light text-success">{{ faenas_activas|length }} Activas</span>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 {% if faenas_activas %}
-                <div class="list-group">
+                <div class="list-group list-group-flush">
                     {% for faena in faenas_activas %}
                     <a href="{% url 'faena_detail' faena.pk %}" class="list-group-item list-group-item-action">
                         <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">{{ faena.nombre }}</h6>
-                            <small>{{ faena.ubicacion }}</small>
+                            <h6 class="mb-1 fw-bold">{{ faena.nombre }}</h6>
+                            <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ faena.ubicacion }}</small>
                         </div>
-                        <p class="mb-1">{{ faena.get_tipo_display }}</p>
-                        <small class="text-muted">Inicio: {{ faena.fecha_inicio }}</small>
+                        <p class="mb-1 small">{{ faena.get_tipo_display }}</p>
+                        <small class="text-muted">Inicio: {{ faena.fecha_inicio|date:"d M Y" }}</small>
                     </a>
                     {% endfor %}
                 </div>
                 {% else %}
-                <p class="text-muted mb-0">No hay faenas activas en este momento.</p>
+                <div class="p-4 text-center text-muted">
+                    <i class="bi bi-tree fs-3 d-block mb-2"></i>
+                    No hay faenas activas en este momento.
+                </div>
                 {% endif %}
+            </div>
+            <div class="card-footer text-center bg-light">
+                <a href="{% url 'faena_list' %}?estado=en_curso" class="text-decoration-none small fw-bold">Ver todas
+                    las faenas activas</a>
             </div>
         </div>
     </div>
 
     <!-- Vehículos en Mantención -->
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header bg-warning text-dark">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="bi bi-tools"></i> Requieren Mantención</h5>
+                <span class="badge bg-dark">{{ vehiculos_mantencion|length }} Vehículos</span>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 {% if vehiculos_mantencion %}
-                <div class="list-group">
+                <div class="list-group list-group-flush">
                     {% for vehiculo in vehiculos_mantencion %}
                     <div class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">{{ vehiculo.patente }} - {{ vehiculo.modelo }}</h6>
-                            <span class="badge bg-danger">{{ vehiculo.horas_uso }} hrs</span>
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ vehiculo.patente }}</h6>
+                                <small class="text-muted">{{ vehiculo.marca }} {{ vehiculo.modelo }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-danger mb-1">{{ vehiculo.horas_uso }} hrs</span>
+                                <br>
+                                <small class="text-muted" style="font-size: 0.75rem;">Uso Total</small>
+                            </div>
                         </div>
-                        <small class="text-muted">{{ vehiculo.get_tipo_display }}</small>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <p class="text-success mb-0"><i class="bi bi-check-circle"></i> Todos los vehículos están al día.</p>
+                <div class="p-4 text-center text-success">
+                    <i class="bi bi-check-circle fs-3 d-block mb-2"></i>
+                    Todos los vehículos están operativos.
+                </div>
                 {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Últimos Incidentes -->
+    <div class="col-md-8 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-shield-exclamation"></i> Últimos Incidentes Reportados</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if incidentes_recientes %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Gravedad</th>
+                                <th>Faena</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for incidente in incidentes_recientes %}
+                            <tr>
+                                <td>{{ incidente.fecha_incidente|date:"d/m/Y" }}</td>
+                                <td>{{ incidente.get_tipo_display }}</td>
+                                <td>
+                                    <span
+                                        class="badge bg-{% if incidente.gravedad == 'critico' %}danger{% elif incidente.gravedad == 'grave' %}warning text-dark{% else %}info{% endif %}">
+                                        {{ incidente.get_gravedad_display }}
+                                    </span>
+                                </td>
+                                <td>{{ incidente.faena.nombre|truncatechars:20 }}</td>
+                                <td>
+                                    <a href="{% url 'faena_detail' incidente.faena.pk %}"
+                                        class="btn btn-sm btn-outline-secondary">Ver</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-4 text-center text-muted">
+                    <i class="bi bi-shield-check fs-3 d-block mb-2"></i>
+                    No hay incidentes recientes reportados.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen Financiero -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-cash-coin"></i> Costos de Mantención</h5>
+            </div>
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <h6 class="text-muted mb-3">Gasto Total Acumulado</h6>
+                <h2 class="display-6 fw-bold text-dark">${{ costo_mantencion|intcomma }}</h2>
+                <p class="text-muted small mb-0">CLP (Peso Chileno)</p>
+                <hr>
+                <div class="d-grid gap-2">
+                    <a href="#" class="btn btn-outline-secondary btn-sm">Ver Reporte Detallado</a>
+                </div>
             </div>
         </div>
     </div>
@@ -99,8 +197,8 @@
 <!-- Acciones Rápidas -->
 <div class="row">
     <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
                 <h5 class="mb-0"><i class="bi bi-lightning"></i> Acciones Rápidas</h5>
             </div>
             <div class="card-body">

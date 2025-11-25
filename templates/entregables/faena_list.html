@@ -3,91 +3,89 @@
 {% block title %}Gestión de Faenas - {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-8">
-        <h2><i class="bi bi-tree"></i> Gestión de Faenas</h2>
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-tree"></i> Gestión de Faenas</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'faena_create' %}" class="btn btn-warning">
+                <i class="bi bi-plus-circle"></i> Nueva Faena
+            </a>
+        </div>
     </div>
-    <div class="col-md-4 text-end">
-        <a href="{% url 'faena_create' %}" class="btn btn-warning">
-            <i class="bi bi-plus-circle"></i> Nueva Faena
-        </a>
-    </div>
-</div>
 
-<div class="card">
-    <div class="card-body">
-        <form method="get" class="row g-3 mb-4">
-            <div class="col-md-3">
-                <input type="text" name="q" class="form-control" placeholder="Buscar..."
-                    value="{{ busqueda|default:'' }}">
-            </div>
-            <div class="col-md-3">
-                <select name="tipo" class="form-select">
-                    <option value="">Todos los tipos</option>
-                    {% for tipo_val, tipo_label in tipos %}
-                    <option value="{{ tipo_val }}" {% if tipo_filter==tipo_val %}selected{% endif %}>{{ tipo_label }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select name="estado" class="form-select">
-                    <option value="">Todos los estados</option>
-                    {% for estado_val, estado_label in estados %}
-                    <option value="{{ estado_val }}" {% if estado_filter==estado_val %}selected{% endif %}>{{
-                        estado_label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-secondary w-100">Filtrar</button>
-            </div>
-        </form>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <input type="text" name="q" class="form-control" placeholder="Buscar por nombre..."
+                        value="{{ busqueda|default:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="tipo" class="form-select">
+                        <option value="">Todos los tipos</option>
+                        {% for tipo_val, tipo_label in tipos %}
+                        <option value="{{ tipo_val }}" {% if tipo_filter == tipo_val %}selected{% endif %}>{{ tipo_label
+                            }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="estado" class="form-select">
+                        <option value="">Todos los estados</option>
+                        {% for estado_val, estado_label in estados %}
+                        <option value="{{ estado_val }}" {% if estado_filter == estado_val %}selected{% endif %}>{{ estado_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">Filtrar</button>
+                </div>
+            </form>
 
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Tipo</th>
-                        <th>Ubicación</th>
-                        <th>Vehículo</th>
-                        <th>Operario</th>
-                        <th>Estado</th>
-                        <th>Inicio</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for faena in faenas %}
-                    <tr>
-                        <td class="fw-bold"><a href="{% url 'faena_detail' faena.pk %}" class="text-decoration-none">{{
-                                faena.nombre }}</a></td>
-                        <td>{{ faena.get_tipo_display }}</td>
-                        <td>{{ faena.ubicacion }}</td>
-                        <td>{{ faena.vehiculo.patente }}</td>
-                        <td>{{ faena.operario.nombre|default:"-" }}</td>
-                        <td>
-                            <span
-                                class="badge bg-{% if faena.estado == 'en_curso' %}success{% elif faena.estado == 'planificada' %}info{% elif faena.estado == 'detenida' %}danger{% else %}secondary{% endif %}">
-                                {{ faena.get_estado_display }}
-                            </span>
-                        </td>
-                        <td>{{ faena.fecha_inicio|date:"d/m/Y" }}</td>
-                        <td>
-                            <a href="{% url 'faena_update' faena.pk %}" class="btn btn-sm btn-outline-primary"><i
-                                    class="bi bi-pencil"></i></a>
-                            <a href="{% url 'faena_delete' faena.pk %}" class="btn btn-sm btn-outline-danger"><i
-                                    class="bi bi-trash"></i></a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="8" class="text-center text-muted py-4">No se encontraron faenas.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Tipo</th>
+                            <th>Ubicación</th>
+                            <th>Vehículo</th>
+                            <th>Operario</th>
+                            <th>Estado</th>
+                            <th>Inicio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for faena in faenas %}
+                        <tr>
+                            <td class="fw-bold"><a href="{% url 'faena_detail' faena.pk %}"
+                                    class="text-decoration-none">{{ faena.nombre }}</a></td>
+                            <td>{{ faena.get_tipo_display }}</td>
+                            <td>{{ faena.ubicacion }}</td>
+                            <td>{{ faena.vehiculo.patente }}</td>
+                            <td>{{ faena.operario.nombre|default:"-" }}</td>
+                            <td data-estado="{{ faena.estado }}" data-estado-label="{{ faena.get_estado_display }}">
+                                <span class="badge bg-{% if faena.estado == 'en_curso' %}success{% elif faena.estado == 'planificada' %}info{% elif faena.estado == 'pausada' %}warning{% elif faena.estado == 'completada' %}secondary{% else %}danger{% endif %}">{{ faena.get_estado_display }}</span>
+                            </td>
+                            <td>{{ faena.fecha_inicio|date:"d/m/Y" }}</td>
+                            <td>
+                                <a href="{% url 'faena_update' faena.pk %}" class="btn btn-sm btn-outline-primary"><i
+                                        class="bi bi-pencil"></i></a>
+                                <a href="{% url 'faena_delete' faena.pk %}" class="btn btn-sm btn-outline-danger"><i
+                                        class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">No se encontraron faenas.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

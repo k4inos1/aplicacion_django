@@ -3,79 +3,77 @@
 {% block title %}{{ title }} - {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-8">
-        <h2><i class="bi bi-truck"></i> {{ title }}</h2>
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="bi bi-truck"></i> {{ title }}</h2>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'vehiculo_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nuevo Vehículo
+            </a>
+        </div>
     </div>
-    <div class="col-md-4 text-end">
-        <a href="{% url 'vehiculo_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Nuevo Vehículo
-        </a>
-    </div>
-</div>
 
-<div class="card">
-    <div class="card-body">
-        <form method="get" class="row g-3 mb-4">
-            <div class="col-md-4">
-                <input type="text" name="q" class="form-control" placeholder="Buscar por patente, marca..."
-                    value="{{ busqueda|default:'' }}">
-            </div>
-            <div class="col-md-3">
-                <select name="estado" class="form-select">
-                    <option value="">Todos los estados</option>
-                    {% for estado_val, estado_label in estados %}
-                    <option value="{{ estado_val }}" {% if estado_filter==estado_val %}selected{% endif %}>{{
-                        estado_label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-secondary w-100">Filtrar</button>
-            </div>
-        </form>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <input type="text" name="q" class="form-control" placeholder="Buscar por patente, marca..."
+                        value="{{ busqueda|default:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="estado" class="form-select">
+                        <option value="">Todos los estados</option>
+                        {% for estado_val, estado_label in estados %}
+                        <option value="{{ estado_val }}" {% if estado_filter == estado_val %}selected{% endif %}>{{ estado_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">Filtrar</button>
+                </div>
+            </form>
 
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>Patente</th>
-                        <th>Tipo</th>
-                        <th>Marca/Modelo</th>
-                        <th>Año</th>
-                        <th>Estado</th>
-                        <th>Horas Uso</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for vehiculo in vehiculos %}
-                    <tr>
-                        <td class="fw-bold">{{ vehiculo.patente }}</td>
-                        <td>{{ vehiculo.get_tipo_display }}</td>
-                        <td>{{ vehiculo.marca }} {{ vehiculo.modelo }}</td>
-                        <td>{{ vehiculo.año }}</td>
-                        <td>
-                            <span
-                                class="badge bg-{% if vehiculo.estado == 'operativo' %}success{% elif vehiculo.estado == 'mantencion' %}warning{% else %}danger{% endif %}">
-                                {{ vehiculo.get_estado_display }}
-                            </span>
-                        </td>
-                        <td>{{ vehiculo.horas_uso }} hrs</td>
-                        <td>
-                            <a href="{% url 'vehiculo_update' vehiculo.pk %}" class="btn btn-sm btn-outline-primary"><i
-                                    class="bi bi-pencil"></i></a>
-                            <a href="{% url 'vehiculo_delete' vehiculo.pk %}" class="btn btn-sm btn-outline-danger"><i
-                                    class="bi bi-trash"></i></a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-4">No se encontraron vehículos.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Patente</th>
+                            <th>Tipo</th>
+                            <th>Marca/Modelo</th>
+                            <th>Año</th>
+                            <th>Estado</th>
+                            <th>Horas Uso</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vehiculo in vehiculos %}
+                        <tr>
+                            <td class="fw-bold">{{ vehiculo.patente }}</td>
+                            <td>{{ vehiculo.get_tipo_display }}</td>
+                            <td>{{ vehiculo.marca }} {{ vehiculo.modelo }}</td>
+                            <td>{{ vehiculo.año }}</td>
+                            <td data-estado="{{ vehiculo.estado }}" data-estado-label="{{ vehiculo.get_estado_display }}">
+                                <span class="badge bg-{% if vehiculo.estado == 'operativo' %}success{% elif vehiculo.estado == 'en_mantencion' %}warning{% elif vehiculo.estado == 'reparacion' %}warning{% else %}danger{% endif %}">{{ vehiculo.get_estado_display }}</span>
+                            </td>
+                            <td>{{ vehiculo.horas_uso }} hrs</td>
+                            <td>
+                                <a href="{% url 'vehiculo_update' vehiculo.pk %}"
+                                    class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                                <a href="{% url 'vehiculo_delete' vehiculo.pk %}"
+                                    class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No se encontraron vehículos.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
