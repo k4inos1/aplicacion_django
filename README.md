@@ -143,5 +143,3 @@ aplicacion_django/
 - Si el servidor no arranca: ejecuta `py manage.py check` y revisa errores en consola.
 
 ---
-
-Si quieres, agrego instrucciones de despliegue con Docker (Gunicorn + Nginx) o adapto README para PostgreSQL. Dime cuál prefieres.
