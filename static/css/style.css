@@ -125,6 +125,56 @@ main.content {
     box-shadow: none;
 }
 
+/* ============================================
+   5. STATUS BADGE FALLBACK (CSS-only)
+   Render status badges from the `data-estado` attribute using a pseudo-element.
+   This makes the status visible even if JavaScript removes child elements.
+   ============================================ */
+table.table td[data-estado] {
+    position: relative;
+}
+
+/* hide any inner .badge so we use the CSS-rendered one instead */
+table.table td[data-estado] .badge {
+    display: none !important;
+}
+
+table.table td[data-estado]::after {
+    content: attr(data-estado-label);
+    display: inline-block;
+    padding: 0.45em 0.75em;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    margin-left: 0.25rem;
+    color: #fff;
+}
+
+/* Colors by estado value (add more as needed) */
+table.table td[data-estado="operativo"]::after,
+table.table td[data-estado="en_curso"]::after,
+table.table td[data-estado="activo"]::after {
+    background-color: var(--success-color);
+}
+
+table.table td[data-estado="planificada"]::after,
+table.table td[data-estado="en_mantencion"]::after,
+table.table td[data-estado="pausada"]::after {
+    background-color: var(--warning-color);
+    color: #212529;
+}
+
+table.table td[data-estado="completada"]::after {
+    background-color: var(--dark-gray);
+}
+
+table.table td[data-estado="inactivo"]::after,
+table.table td[data-estado="fuera_servicio"]::after {
+    background-color: var(--danger-color);
+}
+
+
 .btn:hover {
     transform: translateY(-1px);
 }

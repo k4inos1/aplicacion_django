@@ -173,9 +173,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // 12. BADGE ANIMATION ON LOAD
     // ============================================
     const badges = document.querySelectorAll('.badge');
-    badges.forEach((badge, index) => {
-        badge.style.animation = `fadeIn 0.5s ease ${index * 0.1}s forwards`;
-        badge.style.opacity = '0';
+    badges.forEach((badge) => {
+        badge.style.animation = '';
+        badge.style.opacity = '';
+        badge.style.visibility = '';
     });
     
     // ============================================
@@ -239,6 +240,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const badge = document.createElement('span');
             badge.className = 'badge bg-secondary ms-2';
             badge.textContent = rowCount;
+            badge.style.visibility = 'visible'; // Ensure visibility
+            badge.style.opacity = '1'; // Prevent dynamic hiding
             heading.appendChild(badge);
         }
     }
@@ -360,4 +363,119 @@ function showNotification(message, type = 'success') {
     setTimeout(() => {
         alertDiv.remove();
     }, 5000);
+}
+
+// ============================================
+// DEBUG: MutationObserver to detect badge removals
+// (temporary: logs removals and stack trace to console)
+// ============================================
+(function() {
+    try {
+        const observer = new MutationObserver((mutations) => {
+            for (const m of mutations) {
+                if (m.removedNodes && m.removedNodes.length) {
+                    m.removedNodes.forEach(node => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            // if a removed element contains a badge or is a badge, log it
+                            if (node.classList && node.classList.contains('badge') || node.querySelector && node.querySelector('.badge')) {
+                                console.warn('Badge element removed from DOM:', node);
+                                console.trace();
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+        console.log('Badge-removal observer installed');
+        // Ensure badges are present initially
+        ensureStatusBadges();
+    } catch (e) {
+        console.error('Could not install badge observer', e);
+    }
+})();
+
+// Ensure table status badges exist for any `td[data-estado]`
+function getBadgeClassForEstado(estado) {
+    if (!estado) return 'bg-secondary';
+    estado = estado.toString().toLowerCase();
+    if (estado === 'operativo' || estado === 'en_curso' || estado === 'activo') return 'bg-success';
+    if (estado === 'planificada' || estado === 'en_mantencion' || estado === 'pausada') return 'bg-warning';
+    if (estado === 'completada') return 'bg-secondary';
+    if (estado === 'inactivo' || estado === 'fuera_servicio') return 'bg-danger';
+    return 'bg-secondary';
+}
+
+function ensureStatusBadges() {
+    const tds = document.querySelectorAll('td[data-estado]');
+    tds.forEach(td => {
+        // if badge already present, skip
+        if (td.querySelector('.badge')) return;
+        const estado = td.getAttribute('data-estado');
+        const label = td.getAttribute('data-estado-label') || (estado ? estado : '');
+        const span = document.createElement('span');
+        span.className = 'badge ' + getBadgeClassForEstado(estado) + ' text-uppercase';
+        span.textContent = label;
+        // enforce inline visibility styles so other scripts can't easily hide it
+        span.style.display = 'inline-block';
+        span.style.visibility = 'visible';
+        span.style.opacity = '1';
+        // append badge (keep existing spacing)
+        td.appendChild(span);
+    });
+}
+
+// Watch for removals and restore badges quickly
+const badgeRestoreObserver = new MutationObserver((mutations) => {
+    let changed = false;
+    for (const m of mutations) {
+        if (m.removedNodes && m.removedNodes.length) {
+            m.removedNodes.forEach(node => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    if ((node.classList && node.classList.contains('badge')) || (node.querySelector && node.querySelector('.badge'))) {
+                        console.warn('Badge removed, will attempt restore');
+                        changed = true;
+                    }
+                }
+            });
+        }
+    }
+    if (changed) {
+        // Give a tiny delay to let other scripts finish, then restore
+        setTimeout(() => ensureStatusBadges(), 10);
+    }
+});
+try {
+    badgeRestoreObserver.observe(document.body, { childList: true, subtree: true });
+    console.log('Badge-restore observer installed');
+} catch (e) {
+    console.error('Could not install badge-restore observer', e);
+}
+
+// Attribute observer: watch for style/class changes on badges and restore visibility
+try {
+    const attrObserver = new MutationObserver((mutations) => {
+        let needsRestore = false;
+        mutations.forEach(m => {
+            if (m.type === 'attributes' && m.target) {
+                const el = m.target;
+                if (el.classList && el.classList.contains('badge')) {
+                    // remove common hiding classes
+                    if (el.classList.contains('d-none')) el.classList.remove('d-none');
+                    // restore inline styles
+                    el.style.display = 'inline-block';
+                    el.style.visibility = 'visible';
+                    el.style.opacity = '1';
+                    needsRestore = true;
+                }
+            }
+        });
+        if (needsRestore) ensureStatusBadges();
+    });
+    // start observing body for attribute changes on subtree
+    attrObserver.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['style', 'class'] });
+    console.log('Badge-attribute observer installed');
+} catch (e) {
+    console.error('Could not install badge-attribute observer', e);
 }
