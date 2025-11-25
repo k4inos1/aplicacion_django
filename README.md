@@ -2,158 +2,146 @@
 
 Sistema web desarrollado en Django para la gestión integral de maquinaria, operarios y faenas en la industria forestal del Biobío.
 
-## 🌲 Descripción
+# Sistema Forestal — Aplicación de Gestión (Django)
 
-Esta aplicación permite a empresas forestales gestionar eficientemente sus activos y operaciones. Diseñada específicamente para el contexto industrial, incluye control de maquinaria pesada, registro de operarios con validación nacional, seguimiento de faenas y gestión de seguridad.
+Aplicación web Django para la gestión de vehículos, operarios y faenas (enfoque forestal).
 
-## 🚀 Características Principales
+## Resumen
+- Framework: Django
+- Lenguaje: Python 3.10+ (recomendado 3.11)
+- Base de datos: SQLite por defecto (desarrollo). Soporta MySQL/Postgres en producción.
 
-### Gestión de Maquinaria
-- **Registro de Vehículos**: Camiones, cosechadoras, skidders, grúas.
-- **Control de Mantenciones**: Alertas automáticas cada 500 horas de uso.
-- **Historial**: Registro de mantenciones preventivas y correctivas.
+## Características principales
+- Gestión de Vehículos, Operarios, Faenas, Mantenciones e Incidentes
+- Etiquetas visuales (badges) para `estado` con colores y fallback CSS/JS para garantizar visibilidad
+- Comandos de mantenimiento: `seed_db`, `randomize_status`, `reset_db`
+- Plantillas Bootstrap y JS/CSS personalizados (`static/js/main.js`, `entregables/static/css/style.css`)
 
-### Gestión de Operarios
-- **Registro de Personal**: Operadores, choferes, mecánicos, supervisores.
-- **Validación de RUT**: Algoritmo de validación de RUT chileno integrado.
-- **Perfiles**: Control de licencias y roles.
+## Requisitos
+- Python 3.10+ (recomendado 3.11)
+- pip
+- (Opcional) MySQL o PostgreSQL para producción
 
-### Control de Operaciones
-- **Gestión de Faenas**: Planificación y seguimiento de cortes, transporte y raleo.
-- **Métricas**: Registro de metros cúbicos (m³) y hectáreas trabajadas.
-- **Seguridad**: Registro y seguimiento de incidentes y accidentes.
+## Instalación rápida (Windows, PowerShell)
+1. Clonar repo
 
-### Seguridad y Tecnología
-- **Base de Datos Industrial**: MySQL 9.5.
-- **Autenticación Robusta**: Sistema de login/logout con protección de rutas.
-- **Validaciones**: Control estricto de datos (fechas, rangos, formatos).
-- **Auditoría**: Logging de errores y seguimiento de acciones.
-
-## 🛠️ Requisitos Previos
-
-- Python 3.10 o superior
-- MySQL Server 8.0 o superior
-- pip (gestor de paquetes de Python)
-
-## 📦 Instalación y Configuración
-
-### 1. Clonar el Repositorio
-```bash
+```pwsh
 git clone https://github.com/k4inos1/aplicacion_django.git
 cd aplicacion_django
 ```
 
-### 2. Configurar Entorno Virtual
-```bash
-py -m venv venv
-# En Windows:
-venv\Scripts\activate
-# En Linux/Mac:
-source venv/bin/activate
+2. Crear y activar entorno
+
+```pwsh
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
 ```
 
-### 3. Instalar Dependencias
-```bash
+3. Instalar dependencias
+
+```pwsh
 pip install -r requirements.txt
 ```
 
-### 4. Configurar Base de Datos (MySQL)
+4. Migrar y crear superusuario
 
-Asegúrate de tener MySQL corriendo y crea la base de datos:
-
-```sql
-CREATE DATABASE aplicacion_django CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'ADMIN'@'localhost' IDENTIFIED BY 'ForestalDB2025!';
-GRANT ALL PRIVILEGES ON gestion_forestal.* TO 'ADMIN'@'localhost';
-FLUSH PRIVILEGES;
-```
-
-Configura el archivo `.env` en la raíz del proyecto (o usa los defaults en settings.py):
-```env
-DB_ENGINE=mysql
-DB_NAME=gestion_forestal
-DB_USER=ADMIN
-DB_PASSWORD=ForestalDB2025!
-DB_HOST=localhost
-DB_PORT=3306
-```
-
-### 5. Migrar Datos
-```bash
+```pwsh
 py manage.py migrate
-```
-
-### 6. Crear Superusuario
-```bash
 py manage.py createsuperuser
 ```
 
-### 7. Iniciar Servidor
-```bash
+5. Ejecutar servidor de desarrollo
+
+```pwsh
 py manage.py runserver
 ```
-Accede a `http://127.0.0.1:8000/`
 
-## 🛠️ Herramientas de Desarrollo y Gestión
+Accede a `http://127.0.0.1:8000/`.
 
-El proyecto incluye comandos personalizados para facilitar el desarrollo y pruebas:
-
-### Poblar Base de Datos (Seeding)
-Genera un gran volumen de datos de prueba (vehículos, operarios, faenas, etc.) para verificar el rendimiento y la paginación.
-```bash
-py manage.py seed_db
-```
-
-### Aleatorizar Datos (Randomize)
-Actualiza **todos** los registros existentes con valores aleatorios. Útil para probar cambios de estado, filtros y visualización de datos variados sin crear nuevos registros.
-```bash
-py manage.py randomize_status
-```
-*Nota: Este comando modifica datos existentes, incluyendo estados, fechas, costos y asignaciones.*
-
-
-## 🔒 Seguridad Implementada
-
-### Autenticación
-- Todas las vistas requieren inicio de sesión (`@login_required`).
-- Contraseñas almacenadas con hash seguro (PBKDF2).
-- Protección contra ataques de fuerza bruta (limitación de intentos por defecto en Django).
-
-### Validación de Datos
-- **RUT Chileno**: Se valida formato y dígito verificador en el servidor.
-- **Sanitización**: Los inputs son sanitizados para prevenir XSS.
-- **Integridad**: Uso de transacciones y validación de claves foráneas.
-
-### Manejo de Errores
-- Bloques `try-except` en operaciones críticas.
-- Sistema de logging para registrar errores sin exponer detalles al usuario.
-- Mensajes de feedback (Flash Messages) para acciones del usuario.
-
-## 🏗️ Estructura del Proyecto
+## Configurar base de datos externa (opcional)
+Si usas MySQL/Postgres, configura las variables de conexión en `gestion_entregables/settings.py` o a través de variables de entorno. Ejemplo `.env`:
 
 ```
-gestion-forestal/
-├── entregables/           # Aplicación principal
-│   ├── models.py          # Modelos de datos (Vehiculo, Operario, Faena...)
-│   ├── views.py           # Lógica de negocio y controladores
-│   ├── urls.py            # Rutas de la aplicación
-│   └── admin.py           # Configuración del panel administrativo
-├── templates/             # Plantillas HTML
-│   ├── entregables/       # Vistas del sistema
-│   └── registration/      # Vistas de autenticación
-├── gestion_entregables/   # Configuración del proyecto
-│   ├── settings.py        # Configuración global
-│   └── urls.py            # Rutas principales
-└── requirements.txt       # Dependencias del proyecto
+DB_ENGINE=postgresql
+DB_NAME=gestion_forestal
+DB_USER=usuario
+DB_PASSWORD=secreto
+DB_HOST=127.0.0.1
+DB_PORT=5432
 ```
 
-## 👥 Roles de Usuario
+## Instalación de MySQL (MySQL Installer, GUI, Windows)
+Pasos rápidos para instalar MySQL con el instalador oficial en Windows:
 
-- **Administrador**: Acceso total al sistema y panel admin.
-- **Supervisor**: Gestión de faenas y operarios.
-- **Mecánico**: Registro de mantenciones.
-- **Operador**: Visualización de tareas asignadas.
+1. Descargar MySQL Installer desde: https://dev.mysql.com/downloads/installer/ (elige la versión "Windows (x86, 64-bit), MSI Installer").
+2. Ejecutar el instalador y seleccionar **Developer Default** o **Server only**.
+3. Durante el asistente:
+	 - Acepta las dependencias (Connector/ODBC, Tools) sugeridas.
+	 - Configura el tipo de configuración (Standalone MySQL Server).
+	 - Define contraseña para el usuario `root` (guárdala de forma segura).
+	 - Asegúrate de que el servicio MySQL quede configurado para iniciarse automáticamente.
+4. Finaliza la instalación y prueba conexión desde PowerShell:
+```pwsh
+mysql -u root -p
+```
+Ingresa la contraseña para verificar que puedes acceder.
 
-## 📄 Licencia
+5. Crear la base de datos y usuario para la aplicación (ajusta `TuPasswordSeguro!`):
+```sql
+CREATE DATABASE gestion_forestal CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'gestion_user'@'localhost' IDENTIFIED BY 'TuPasswordSeguro!';
+GRANT ALL PRIVILEGES ON gestion_forestal.* TO 'gestion_user'@'localhost';
+FLUSH PRIVILEGES;
+```
 
-Este proyecto es de uso educativo para INACAP Sede Concepción-Talcahuano.
+Notas:
+- Si el driver Python que uses muestra errores de autenticación (plugin `caching_sha2_password`), ejecuta:
+	```sql
+	ALTER USER 'gestion_user'@'localhost' IDENTIFIED WITH mysql_native_password BY 'TuPasswordSeguro!';
+	FLUSH PRIVILEGES;
+	```
+- Para desarrollo Windows recomiendo `PyMySQL` (fácil de instalar). Para producción `mysqlclient` ofrece mejor rendimiento.
+
+
+## Comandos útiles
+- `py manage.py seed_db` — Poblado masivo de datos para pruebas (vehículos, operarios, faenas, etc.).
+- `py manage.py randomize_status` — Aleatoriza estados y algunos campos para probar vistas.
+- `py manage.py reset_db [--seed]` — Revierte y reaplica migraciones; con `--seed` vuelve a poblar.
+
+**Atención**: `randomize_status` y `reset_db --seed` pueden modificar registros; usar solo en entornos de prueba.
+
+## Frontend: badges y visibilidad (nota técnica)
+Durante desarrollo detectamos que algunas manipulaciones del DOM ocultaban las etiquetas de estado temporalmente. Para robustecer la visualización se aplicaron tres medidas:
+
+1. Las celdas de estado (`td`) incluyen `data-estado` y `data-estado-label` en las plantillas.
+2. `static/js/main.js` contiene funciones defensivas (`ensureStatusBadges`) y `MutationObserver` que restauran badges si se eliminan o se les cambia el estilo.
+3. Fallback CSS: `td[data-estado]::after { content: attr(data-estado-label); }` — esto asegura que el texto del estado aparezca incluso si un script borra nodos hijos.
+
+Si notas problemas visuales, realiza un hard-refresh (Ctrl+F5) y revisa la consola del navegador para mensajes del observer.
+
+## Estructura del proyecto (resumen)
+```
+aplicacion_django/
+├── entregables/                # App principal (models, views, templates, management)
+│   ├── management/commands/    # seed_db, reset_db, randomize_status
+│   ├── migrations/
+│   └── templates/entregables/
+├── gestion_entregables/        # settings.py, urls.py
+├── static/                     # assets globales
+├── db.sqlite3                   # BD de desarrollo (opcional)
+├── manage.py
+└── requirements.txt
+```
+
+## Desarrollo y contribuciones
+- Usa ramas descriptivas y PR.
+- Añade tests para cambios de lógica.
+- Mantén `requirements.txt` actualizado.
+
+## Troubleshooting rápido
+- Si las etiquetas desaparecen: hard-refresh + abrir DevTools (F12) → Console. Los observers emiten logs cuando restauran badges.
+- Si el servidor no arranca: ejecuta `py manage.py check` y revisa errores en consola.
+
+---
+
+Si quieres, agrego instrucciones de despliegue con Docker (Gunicorn + Nginx) o adapto README para PostgreSQL. Dime cuál prefieres.
