@@ -1,0 +1,90 @@
+{% extends 'logistica/base.html' %}
+
+{% block title %}Detalle Carga{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Detalle de Carga #{{ object.id }}</h4>
+                <div>
+                    <a href="{% url 'carga_update' object.pk %}" class="btn btn-primary btn-sm">Editar</a>
+                    <a href="{% url 'carga_list' %}" class="btn btn-outline-secondary btn-sm">Volver</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-muted text-uppercase small ls-1">Información General</h6>
+                        <hr class="mt-1 mb-3">
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Descripción</label>
+                        <p class="fw-bold">{{ object.descripcion }}</p>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="text-muted small">Estado</label>
+                        <div>
+                            <span class="badge bg-secondary">{{ object.get_estado_display }}</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="text-muted small">Tipo</label>
+                        <div>
+                            {{ object.get_tipo_movimiento_display }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Origen</label>
+                        <p>{{ object.origen }}</p>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Destino</label>
+                        <p>{{ object.destino }}</p>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Peso</label>
+                        <p>{{ object.peso_kg }} kg</p>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Fecha Programada</label>
+                        <p>{{ object.fecha_programada|date:"d/m/Y H:i" }}</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="text-muted text-uppercase small ls-1">Transporte</h6>
+                        <hr class="mt-1 mb-3">
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Vehículo</label>
+                        <p>
+                            <a href="{% url 'vehiculo_detail' object.vehiculo.pk %}" class="text-decoration-none">
+                                {{ object.vehiculo.patente }} - {{ object.vehiculo.marca }}
+                            </a>
+                        </p>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Chofer</label>
+                        <p>{{ object.chofer }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-light text-muted small">
+                Creado el {{ object.created_at|date:"d/m/Y H:i" }} | Última actualización: {{ object.updated_at|date:"d/m/Y H:i" }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

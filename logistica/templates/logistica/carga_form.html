@@ -1,0 +1,81 @@
+{% extends 'logistica/base.html' %}
+
+{% block title %}{% if form.instance.pk %}Editar{% else %}Nueva{% endif %} Carga{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0">{% if form.instance.pk %}Editar{% else %}Nueva{% endif %} Carga</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Descripción</label>
+                            {{ form.descripcion }}
+                            {{ form.descripcion.errors }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Peso (kg)</label>
+                            {{ form.peso_kg }}
+                            {{ form.peso_kg.errors }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tipo Movimiento</label>
+                            {{ form.tipo_movimiento }}
+                            {{ form.tipo_movimiento.errors }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Origen</label>
+                            {{ form.origen }}
+                            {{ form.origen.errors }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Destino</label>
+                            {{ form.destino }}
+                            {{ form.destino.errors }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Fecha Programada</label>
+                            {{ form.fecha_programada }}
+                            {{ form.fecha_programada.errors }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Estado</label>
+                            {{ form.estado }}
+                            {{ form.estado.errors }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Vehículo</label>
+                            {{ form.vehiculo }}
+                            {{ form.vehiculo.errors }}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Chofer Responsable</label>
+                            {{ form.chofer }}
+                            {{ form.chofer.errors }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'carga_list' %}" class="btn btn-secondary me-md-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

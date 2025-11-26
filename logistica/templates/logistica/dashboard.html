@@ -1,0 +1,93 @@
+{% extends 'logistica/base.html' %}
+
+{% block title %}Dashboard - Logística{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h2">Panel de Control</h1>
+        <p class="lead">Bienvenido al sistema de logística industrial.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-start border-4 border-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="card-title text-muted mb-0">Vehículos</h5>
+                    <i class="bi bi-truck fs-4 text-primary"></i>
+                </div>
+                <h2 class="display-6 fw-bold mb-0">{{ vehiculos_count }}</h2>
+                <a href="{% url 'vehiculo_list' %}" class="btn btn-link px-0 text-decoration-none">Ver todos</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-start border-4 border-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="card-title text-muted mb-0">Cargas</h5>
+                    <i class="bi bi-box-seam fs-4 text-success"></i>
+                </div>
+                <h2 class="display-6 fw-bold mb-0">{{ cargas_count }}</h2>
+                <a href="{% url 'carga_list' %}" class="btn btn-link px-0 text-decoration-none">Ver todas</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Últimos Movimientos de Carga</h5>
+                <a href="{% url 'carga_create' %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg"></i> Nueva Carga
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Descripción</th>
+                                <th>Tipo</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for carga in ultimas_cargas %}
+                            <tr>
+                                <td>#{{ carga.id }}</td>
+                                <td>{{ carga.descripcion }}</td>
+                                <td>
+                                    <span class="badge {% if carga.tipo_movimiento == 'INGRESO' %}bg-info{% else %}bg-warning{% endif %}">
+                                        {{ carga.get_tipo_movimiento_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ carga.get_estado_display }}</span>
+                                </td>
+                                <td>{{ carga.fecha_programada|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'carga_detail' carga.pk %}" class="btn btn-sm btn-outline-primary">Ver</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">No hay movimientos registrados.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
