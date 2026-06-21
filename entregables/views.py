@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Q, Sum
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
@@ -28,8 +29,15 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, f'Bienvenido {user.username}!')
-            next_url = request.GET.get('next', 'index')
-            return redirect(next_url)
+            safe_next_url = ''
+            next_url = request.GET.get('next', '')
+            if next_url and url_has_allowed_host_and_scheme(
+                url=next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure()
+            ):
+                safe_next_url = next_url
+            return redirect(safe_next_url or 'index')
         else:
             messages.error(request, 'Usuario o contraseña incorrectos.')
     
